@@ -1,18 +1,18 @@
---Makes lists of portals on init
+-- Change this if you want the delay between teleports to be longer/shorter. Value is the time in ticks + 1 tick between teleports.
+local DELAY_TICKS = 39 --(DEFAULT (integer, cannot be floating point): 39)
 
-script.on_init(function() -- All globals are tables, entities are saved in them by entity.backer_name (except for teleport delay which actually uses player.index)
+
+--Makes lists of portals and labels on init
+script.on_init(function() -- All globals are tables, entities are saved in them by entity.backer_name
 	global.a_portals = {}
 	global.b_portals = {}
 	global.a_labels = {}
 	global.b_labels = {}
-	global.teleport_delay = {}
 end)
 
-script.on_configuration_changed(function() --initialize new globals when mod version changes
-	global.teleport_delay = global.teleport_delay or {}
-end)
+local teleport_delay = {} --create the table every time the mod is loaded
 
---Creates portal-2 when portal is ghost-placed, creates portal-1 when portal is normally placed:
+--Creates portal-b when portal is ghost-placed, creates portal-a when portal is normally placed:
 script.on_event(defines.events.on_built_entity, function(event)
 	if event.created_entity.type == "entity-ghost" and event.created_entity.ghost_name == "portal" then --is portal ghost-placed?
 		local new_position = event.created_entity.position
@@ -79,7 +79,7 @@ function destroy_label(list, backer_name)
 	end
 end
 
---when player mines portal, removed the dropped item from the players inventory
+--when player mines portal, remove the dropped item from the players inventory
 script.on_event(defines.events.on_player_mined_item, function (event)
 	if event.item_stack.name == "portal-drop" then --did player mine portal?
 		game.players[event.player_index].remove_item(event.item_stack) --remove item dropped by portal from mining player inventory
@@ -104,7 +104,7 @@ end)
 
 --tries to teleport when player connected, has character, not in vehicle:
 script.on_event(defines.events.on_tick, function(event)
-if event.tick % 4 ~= 0 then return end --if it's not divisible by 5 end function 
+	if event.tick % 4 ~= 0 then return end --if it's not divisible by 5 end function 
 	for index, player in pairs(game.connected_players) do --for connected player do stuff
 		if player.character and not player.vehicle then --checks if player has a character (not god mode) and isn't in an vehicle
 			local entry_portal_1 = on_portal(player, "portal-base-a") --returns the portal entity the player is on or false
@@ -133,9 +133,9 @@ end
 function try_teleport(player, exit_portal)	
 	local tick = game.tick
 	if exit_portal and exit_portal.valid then --does that base exist and is it valid?
-		if (not global.teleport_delay[player.index]) or global.teleport_delay[player.index] < game.tick then
+		if (not teleport_delay[player.index]) or teleport_delay[player.index] < tick then
 			player.teleport({exit_portal.position.x, exit_portal.position.y-0.9}, exit_portal.surface) --teleport player to the top of the exit_portal entity
-			global.teleport_delay[player.index] = tick + 39
+			teleport_delay[player.index] = tick + DELAY_TICKS
 		end
 	end
 end
