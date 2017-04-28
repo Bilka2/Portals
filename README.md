@@ -3,6 +3,7 @@
 Adds portals that can teleport players (and only players!). Build the portals using the portal gun: Left click for the orange portal, SHIFT+ Left click (ghost build) for the blue portal. Every player can have one set of portals which can be distinguished using the number next to the portal. This mod can also be found on [the forums.](https://forums.factorio.com/viewtopic.php?f=93&t=44305)
 
 Changelog:
+
 0.2.2
 - Fixed localisation
 - Adjusted graphics
