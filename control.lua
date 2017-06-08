@@ -6,6 +6,7 @@ script.on_init(function()
 	global.b_labels = {} --list[player_index] = label 
 	global.a_numbers = {} --list[unit_number] = player_index
 	global.b_numbers = {} --list[unit_number] = player_index
+	global.teleport_delay = {} --list[player_index] = game.tick + 47
 end)
 
 script.on_configuration_changed(function()
@@ -70,10 +71,8 @@ script.on_configuration_changed(function()
 			global.b_numbers[portal.unit_number] = key
 		end
 	end
-	
+	global.teleport_delay = global.teleport_delay or {}
 end)
-
-local teleport_delay = {} --create the table every time the mod is loaded
 
 
 --destroy the animation of the base entity when given the base entity surface and position, and which animation to destroy:
@@ -124,7 +123,7 @@ local function build_portal(player, base, ani, pos, list, player_index)
 	if base == "portal-b" then portal_colour = {r = 0.5, g = 0.5, b = 1} end --blue portals get blue number
 	local label = player.surface.create_entity({name="portal-label", position={pos.x-0.5, pos.y-0.9}, text=player_index, color=portal_colour}) --creates portal text
 	label.active = false
-	--adds new label to the list, sorted by tostring(player_index):
+	--adds new label to the list, sorted by player_index:
 	if list == global.a_portals then 
 		global.a_labels[player_index] = label 
 		global.a_numbers[portal.unit_number] = player_index --save the player_index that is associated with this portal
@@ -184,7 +183,7 @@ end)
 
 local function on_portal(player, portal)
 	local player_pos = player.position
-	local entities = player.surface.find_entities_filtered{area={{player_pos.x-0.6,player_pos.y-0.3}, {player_pos.x+0.6,player_pos.y+0.1}}, name = portal}
+	local entities = player.surface.find_entities_filtered{area={{player_pos.x-0.7,player_pos.y-0.3}, {player_pos.x+0.7,player_pos.y+0.1}}, name = portal}
 	if entities[1] and entities[1].valid then
 		return entities[1]
 	else
@@ -195,27 +194,27 @@ end
 local function try_teleport(player, exit_portal)	
 	local tick = game.tick
 	if exit_portal and exit_portal.valid then --does that base exist and is it valid?
-		if (not teleport_delay[player.index]) or teleport_delay[player.index] < tick then
+		if (not global.teleport_delay[player.index]) or global.teleport_delay[player.index] < tick then
 			player.surface.create_entity({name="portal-enter", position=player.position})
 			player.teleport({exit_portal.position.x, exit_portal.position.y-0.9}, exit_portal.surface) --teleport player to the top of the exit_portal entity
 			exit_portal.surface.create_entity({name="portal-exit", position=exit_portal.position})
-			teleport_delay[player.index] = tick + 47
+			global.teleport_delay[player.index] = tick + 47
 		end
 	end
 end
 
 --tries to teleport when player connected, has character, not in vehicle:
 script.on_event(defines.events.on_tick, function(event)
-	if event.tick % 2 ~= 0 then return end --if it's not divisible by 5 end function 
-	for index, player in pairs(game.connected_players) do --for connected player do stuff
+	if event.tick % 2 ~= 0 then return end --if it's not divisible by 2 end function 
+	for index, player in pairs(game.connected_players) do
 		if player.character and not player.vehicle then --checks if player has a character (not god mode) and isn't in an vehicle
-			local entry_portal_1 = on_portal(player, "portal-a") --returns the portal entity the player is on or false
-			if entry_portal_1 then -- checks if the player is on an entry_portal_1
+			local entry_portal_1 = on_portal(player, "portal-a")
+			if entry_portal_1 then --if on portal then teleport to other portal
 				local player_index_1 = global.a_numbers[entry_portal_1.unit_number]
 				try_teleport(player, global.b_portals[player_index_1]) --teleport to the b_portal with the same associated player_index as the portal the player is on
 			else
-				local entry_portal_2 = on_portal(player, "portal-b") --returns the portal entity the player is on or false
-				if entry_portal_2 then --checks if the player is on an entry_portal_2
+				local entry_portal_2 = on_portal(player, "portal-b")
+				if entry_portal_2 then --if on portal then teleport to other portal
 					local player_index_2 = global.b_numbers[entry_portal_2.unit_number]
 					try_teleport(player, global.a_portals[player_index_2]) --teleport to the b_portal with the same associated player_index as the portal the player is on
 				end

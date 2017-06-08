@@ -6,6 +6,9 @@ Known issues: The teleportation sound does not play for the player using the por
 
 Changelog:
 
+0.2.6
+- Fixed possible desync (Thank you Nexela!)
+
 0.2.5
 - Added sounds to the portal gun, the portals and teleportation
 - Added combustible lemons
