@@ -121,7 +121,7 @@ local function build_portal(player, base, ani, pos, list, player_index)
 	local portal_colour = {}
 	if base == "portal-a" then portal_colour = {r = 1, g = 0.55, b = 0.1} end --orange portals get orange number
 	if base == "portal-b" then portal_colour = {r = 0.5, g = 0.5, b = 1} end --blue portals get blue number
-	local label = player.surface.create_entity({name="portal-label", position={pos.x-0.5, pos.y-0.9}, text=player_index, color=portal_colour}) --creates portal text
+	local label = player.surface.create_entity({name="portal-label", position={pos.x-0.5, pos.y-0.9}, text=game.players[player_index].name, color=portal_colour}) --creates portal text
 	label.active = false
 	--adds new label to the list, sorted by player_index:
 	if list == global.a_portals then 
