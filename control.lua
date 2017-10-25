@@ -138,9 +138,21 @@ script.on_event(defines.events.on_built_entity, function(event)
 	if event.created_entity.type == "entity-ghost" and event.created_entity.ghost_name == "portal" then --is portal ghost-placed?
 		local new_position = event.created_entity.position
 		local player = game.players[event.player_index]
-		event.created_entity.destroy() --destroy portal which is just a placeholder entitiy
-		player.surface.create_entity{name = "portalgun-shoot-b", position = new_position}
-		build_portal(player, "portal-b", "portal-animation-b", new_position, global.b_portals, event.player_index)
+		if settings.global["portals-disable-long-distance-placing"].value then
+			local max_dist = player.build_distance
+			local X = new_position.x
+			local Y = new_position.y
+			local pY=player.position.y
+			local pX=player.position.x
+			event.created_entity.destroy() --destroy portal which is just a placeholder entitiy
+			if X>=pX-max_dist and X<=pX+max_dist and Y>=pY-max_dist and Y<=pY+max_dist then
+				player.surface.create_entity{name = "portalgun-shoot-b", position = new_position}
+				build_portal(player, "portal-b", "portal-animation-b", new_position, global.b_portals, event.player_index)
+			end
+		else
+			player.surface.create_entity{name = "portalgun-shoot-b", position = new_position}
+			build_portal(player, "portal-b", "portal-animation-b", new_position, global.b_portals, event.player_index)
+		end
 	elseif event.created_entity.name == "portal" then --is portal normally placed?
 		local new_position = event.created_entity.position
 		local player = game.players[event.player_index]

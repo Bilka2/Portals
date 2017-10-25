@@ -6,6 +6,11 @@ Known issues: The teleportation sound does not play for the player using the por
 
 Changelog:
 
+0.2.7
+
+- Added setting to disable the ability to place blue portals from long distances.
+- Cleaned up entity code
+
 0.2.6
 - Fixed possible desync (Thank you Nexela!)
 
