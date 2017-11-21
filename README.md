@@ -84,6 +84,7 @@ disable_long_distance_placing: function(bool)
 - Renamed remote functions related to events
 - Events now pass player_index instead of player (for consistency with vanilla)
 - on_player_teleported now passes entrance_portal instead of old_position
+- Removed useless item
 
 0.2.8
 

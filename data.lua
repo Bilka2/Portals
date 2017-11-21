@@ -46,14 +46,6 @@ data:extend(
 		stack_size= 1,
 	},
 	{
-		type = "item",
-		name = "portal-drop",
-		icon = "__Portals__/graphics/null.png",
-		flags = { "hidden" },
-		order = "a[items]",
-		stack_size= 1,
-	},
-	{
 		type = "capsule",
 		name = "lemon-grenade",
 		icon = "__Portals__/graphics/lemon-grenade.png",

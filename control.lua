@@ -87,7 +87,7 @@ local on_player_placed_portal_event = script.generate_event_name()
 --destroy the animation of the base entity when given the base entity surface and position, and which animation to destroy:
 local function destroy_ani(surface, pos, which)
 	local entities = surface.find_entities_filtered{area={{pos.x-0.1,pos.y+0.9}, {pos.x+0.1,pos.y+1.1}}, name=which} --find the animation
-	if type(entities[1]) ~= "nil"  and entities[1].valid then entities[1].destroy() end --if the variable in the table is not of the type nil then destroy it
+	if entities[1] then entities[1].destroy() end
 end
 
 --destroy the label of the base entity when given the list the label is in and its text:
@@ -184,13 +184,6 @@ script.on_event(defines.events.on_built_entity, function(event)
 	end
 end)
 
---when player mines portal, remove the dropped item from the players inventory
-script.on_event(defines.events.on_player_mined_item, function (event)
-	if event.item_stack.name == "portal-drop" then --did player mine portal?
-		game.players[event.player_index].remove_item(event.item_stack) --remove item dropped by portal from mining player inventory
-	end
-end)
-
 --destroy animation, label, and base if the base entity is given
 local function destroy_portal_from_base(entity)
 	local pos = entity.position
@@ -224,7 +217,7 @@ end)
 local function on_portal(player, portal)
 	local player_pos = player.position
 	local entities = player.surface.find_entities_filtered{area={{player_pos.x-0.7,player_pos.y-0.3}, {player_pos.x+0.7,player_pos.y+0.1}}, name = portal}
-	if entities[1] and entities[1].valid then
+	if entities[1] then
 		return entities[1]
 	else
 		return false
