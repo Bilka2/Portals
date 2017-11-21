@@ -41,7 +41,7 @@ data:extend(
 		subgroup = "transport",
 		icon = "__Portals__/graphics/portal-gun.png",
 		flags = { "goes-to-quickbar" },
-		order = "a[items]",
+		order = "a",
 		place_result="portal",
 		stack_size= 1,
 	},
@@ -61,33 +61,33 @@ data:extend(
 		flags = {"goes-to-quickbar"},
 		capsule_action =
 		{
-		type = "throw",
-		attack_parameters =
-		{
-			type = "projectile",
-			ammo_category = "grenade",
-			cooldown = 20,
-			projectile_creation_distance = 0.6,
-			range = 20,
-			ammo_type =
+			type = "throw",
+			attack_parameters =
 			{
-			category = "grenade",
-			target_type = "position",
-			action =
-			{
-				type = "direct",
-				action_delivery =
-				{
 				type = "projectile",
-				projectile = "lemon-fire-big",
-				starting_speed = 0.5
+				ammo_category = "grenade",
+				cooldown = 20,
+				projectile_creation_distance = 0.6,
+				range = 20,
+				ammo_type =
+				{
+				category = "grenade",
+				target_type = "position",
+				action =
+				{
+					type = "direct",
+					action_delivery =
+					{
+					type = "projectile",
+					projectile = "lemon-fire-big",
+					starting_speed = 0.5
+					}
+				}
 				}
 			}
-			}
-		}
 		},
 		subgroup = "capsule",
-		order = "a[grenade]-a[normal]",
+		order = "a[grenade]-a[lemon]",
 		stack_size = 100
 	},
 

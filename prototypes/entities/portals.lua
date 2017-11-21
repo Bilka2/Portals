@@ -2,9 +2,9 @@
 data:extend(
 {
 	{
-		type = "container",
+		type = "simple-entity-with-owner",
 		name = "portal", --this is what gets placed by the item
-		inventory_size = 0,
+		render_layer = "object",
 		icon = "__Portals__/graphics/portal-gun.png",
 		flags = {"player-creation", "not-deconstructable"},
 		selectable_in_game = false,
@@ -30,7 +30,8 @@ data:extend(
 		type = "electric-pole",
 		name = "portal-a",
 		flags = {"player-creation", "not-blueprintable", "not-deconstructable"},
-		friendly_map_color = {r=1, g=1, b=0},
+		map_color = {r=1, g=0.5, b=0},
+		placeable_by = {item="portal-gun", count= 1},
 		selectable_in_game = true,
 		minable = {mining_time = 0.7, result = "portal-drop"},
 		max_health = 20,
@@ -96,7 +97,7 @@ data:extend(
 			animation_speed = 0.5,
 			scale = 0.5,
 		},
-		tile_width = 3,
+		tile_width = 1,
 		tile_height = 2,
 	},
 	
@@ -104,7 +105,8 @@ data:extend(
 		type = "electric-pole",
 		name = "portal-b",
 		flags = {"player-creation", "not-blueprintable", "not-deconstructable"},
-		friendly_map_color = {r=1, g=1, b=0},
+		map_color = {r=0.5, g=0.5, b=1},
+		placeable_by = {item="portal-gun", count= 1},
 		selectable_in_game = true,
 		minable = {mining_time = 0.7, result = "portal-drop"},
 		max_health = 20,
@@ -170,7 +172,7 @@ data:extend(
 			animation_speed = 0.5,
 			scale = 0.5,
 		},
-		tile_width = 3,
+		tile_width = 1,
 		tile_height = 2,
 	},
 	
