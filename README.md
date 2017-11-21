@@ -4,9 +4,7 @@ Adds portals that can teleport players (and only players!). Build the portals us
 
 Known issues: The teleportation sound does not play for the player using the portal if the portals are on different surfaces. It does however play for any other player near the portals. This is an issue with the game, not the mod.
 
-Custom events:
-
-Events:
+## Custom events
 
 on_player_teleported_event:
 	When a player teleports using a portal.
@@ -20,7 +18,7 @@ on_player_placed_portal_event:
 		- portal = LuaEntity, the portal that was placed
 		- player = LuaPlayer, the player that placed the portal, which is the player the portal belongs to
 	
-Example usage:
+### Example usage
 
 	script.on_load(function()
 		script.on_event(remote.call("portals", "on_player_teleported"), function(event)
@@ -45,36 +43,37 @@ Example usage:
 	end)
 
 
-Remote functions:
+## Remote functions
 
-	build_portal_a: function(player, surface, position)
-		Build an orange portal.
-		Parameters:
-		- position: Position of the new portal
-		- surface: LuaSurface, the surface of the new portal
-		- player: LuaPlayer that the portal belongs to. This player can't have more than one pair, build_portal will delete any excess portals
-	build_portal_b: function(player, surface, position)
-		Build a blue portal.
-		Parameters:
-		- position: Position of the new portal
-		- surface: LuaSurface, the surface of the new portal
-		- player: LuaPlayer that the portal belongs to. This player can't have more than one pair, build_portal will delete any excess portals
-	destroy_portal: function(entity)
-		Destroy the given entity if it is a portal (also destroys label + animation).
-		Parameter:
-		- entity: LuaEntity, the portal to destroy
-	disable_long_distance_placing: function(bool)
-		Change whether the blue portal can be placed from a long distance.
-		Parameter:
-		- bool: Boolean, if this is true the player can never place from a long distance, if it is false, the player can place from a long distance depending on the mod option
+build_portal_a: function(player, surface, position)
+	Build an orange portal.
+	Parameters:
+	- position: Position of the new portal
+	- surface: LuaSurface, the surface of the new portal
+	- player: LuaPlayer that the portal belongs to. This player can't have more than one pair, build_portal will delete any excess portals
+build_portal_b: function(player, surface, position)
+	Build a blue portal.
+	Parameters:
+	- position: Position of the new portal
+	- surface: LuaSurface, the surface of the new portal
+	- player: LuaPlayer that the portal belongs to. This player can't have more than one pair, build_portal will delete any excess portals
+destroy_portal: function(entity)
+	Destroy the given entity if it is a portal (also destroys label + animation).
+	Parameter:
+	- entity: LuaEntity, the portal to destroy
+disable_long_distance_placing: function(bool)
+	Change whether the blue portal can be placed from a long distance.
+	Parameter:
+	- bool: Boolean, if this is true the player can never place from a long distance, if it is false, the player can place from a long distance depending on the mod option
 	
-	-- some examples for the console --
+### Example usage in the console
+
 	/c remote.call("portals", "build_portal_b", game.player, game.player.surface, game.player.position) --place at current player position
 	/c remote.call("portals", "destroy_portal", game.player.selected) --destroy currently selected portal
 	/c remote.call("portals", "disable_long_distance_placing", true) --disable long distance placing
 
 
-Changelog:
+## Changelog
 
 0.2.8
 
