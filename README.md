@@ -7,17 +7,17 @@ Known issues: The teleportation sound does not play for the player using the por
 ## Custom events
 
 on_player_teleported_event:
-	When a player teleports using a portal.
-	Contains:
-		- player = LuaPlayer, the player that is teleporting
-	    - old_position = Position, the old position of the player
-		- target_portal = LuaEntity, the portal the player is teleporting to
+- When a player teleports using a portal.
+- Contains:
+  - player = LuaPlayer, the player that is teleporting
+  - old_position = Position, the old position of the player
+  - target_portal = LuaEntity, the portal the player is teleporting to
 
 on_player_placed_portal_event:
-	When a player places a portal using the portal gun.
-	Contains:
-		- portal = LuaEntity, the portal that was placed
-		- player = LuaPlayer, the player that placed the portal, which is the player the portal belongs to
+- When a player places a portal using the portal gun.
+- Contains:
+  - portal = LuaEntity, the portal that was placed
+  - player = LuaPlayer, the player that placed the portal, which is the player the portal belongs to
 	
 ### Example usage
 
@@ -47,28 +47,28 @@ on_player_placed_portal_event:
 ## Remote functions
 
 build_portal_a: function(player, surface, position)
-	Build an orange portal.
-	Parameters:
-	- position: Position of the new portal
-	- surface: LuaSurface, the surface of the new portal
-	- player: LuaPlayer that the portal belongs to. This player can't have more than one pair, build_portal will delete any excess portals
+- Build an orange portal.
+- Parameters:
+  - position: Position of the new portal
+  - surface: LuaSurface, the surface of the new portal
+  - player: LuaPlayer that the portal belongs to. This player can't have more than one pair, build_portal will delete any excess portals
 
 build_portal_b: function(player, surface, position)
-	Build a blue portal.
-	Parameters:
-	- position: Position of the new portal
-	- surface: LuaSurface, the surface of the new portal
-	- player: LuaPlayer that the portal belongs to. This player can't have more than one pair, build_portal will delete any excess portals
+- Build a blue portal.
+- Parameters:
+  - position: Position of the new portal
+  - surface: LuaSurface, the surface of the new portal
+  - player: LuaPlayer that the portal belongs to. This player can't have more than one pair, build_portal will delete any excess portals
 
 destroy_portal: function(entity)
-	Destroy the given entity if it is a portal (also destroys label + animation).
-	Parameter:
-	- entity: LuaEntity, the portal to destroy
+- Destroy the given entity if it is a portal (also destroys label + animation).
+- Parameter:
+  - entity: LuaEntity, the portal to destroy
 
 disable_long_distance_placing: function(bool)
-	Change whether the blue portal can be placed from a long distance.
-	Parameter:
-	- bool: Boolean, if this is true the player can never place from a long distance, if it is false, the player can place from a long distance depending on the mod option
+- Change whether the blue portal can be placed from a long distance.
+- Parameter:
+  - bool: Boolean, if this is true the player can never place from a long distance, if it is false, the player can place from a long distance depending on the mod option
 	
 ### Example usage in the console
 
