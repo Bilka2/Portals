@@ -9,37 +9,37 @@ Known issues: The teleportation sound does not play for the player using the por
 on_player_teleported_event:
 - When a player teleports using a portal.
 - Contains:
-  - player = LuaPlayer, the player that is teleporting
-  - old_position = Position, the old position of the player
+  - player_index = Index of the player that is teleporting
+  - entrance_portal = LuaEntity, the portal the player is teleporting from
   - target_portal = LuaEntity, the portal the player is teleporting to
 
 on_player_placed_portal_event:
 - When a player places a portal using the portal gun.
 - Contains:
   - portal = LuaEntity, the portal that was placed
-  - player = LuaPlayer, the player that placed the portal, which is the player the portal belongs to
+  - player_index = Index of the player that placed the portal, which is the player the portal belongs to
 	
 ### Example usage
 
 	script.on_load(function()
-		script.on_event(remote.call("portals", "on_player_teleported"), function(event)
+		script.on_event(remote.call("portals", "get_on_player_teleported_event"), function(event)
 			game.print("Woosh!")
-			game.print(event.player.name .. " teleported from " .. serpent.line(event.old_position) .. " to " .. serpent.line(event.target_portal.position))
+			game.print(game.players[event.player_index].name .. " teleported from " .. serpent.line(event.entrance_portal.position) .. " to " .. serpent.line(event.target_portal.position))
 		end)
 	
-		script.on_event(remote.call("portals", "on_player_placed_portal"), function(event)
-			game.print(event.player.name .. " created " .. event.portal.name .. " at " .. serpent.line(event.portal.position))
+		script.on_event(remote.call("portals", "get_on_player_placed_portal_event"), function(event)
+			game.print(game.players[event.player_index].name .. " created " .. event.portal.name .. " at " .. serpent.line(event.portal.position))
 		end)
 	end)
 	
 	script.on_init(function()
-		script.on_event(remote.call("portals", "on_player_teleported"), function(event)
+		script.on_event(remote.call("portals", "get_on_player_teleported_event"), function(event)
 			game.print("Woosh!")
-			game.print(event.player.name .. " teleported from " .. serpent.line(event.old_position) .. " to " .. serpent.line(event.target_portal.position))
+			game.print(game.players[event.player_index].name .. " teleported from " .. serpent.line(event.entrance_portal.position) .. " to " .. serpent.line(event.target_portal.position))
 		end)
 		
-		script.on_event(remote.call("portals", "on_player_placed_portal"), function(event)
-			game.print(event.player.name .. " created " .. event.portal.name .. " at " .. serpent.line(event.portal.position))
+		script.on_event(remote.call("portals", "get_on_player_placed_portal_event"), function(event)
+			game.print(game.players[event.player_index].name .. " created " .. event.portal.name .. " at " .. serpent.line(event.portal.position))
 		end)
 	end)
 
@@ -78,6 +78,12 @@ disable_long_distance_placing: function(bool)
 
 
 ## Changelog
+
+0.2.9
+
+- Renamed remote functions related to events
+- Events now pass player_index instead of player (for consistency with vanilla)
+- on_player_teleported now passes entrance_portal instead of old_position
 
 0.2.8
 

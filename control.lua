@@ -133,7 +133,7 @@ local function build_portal(player, surface, base, ani, pos, list, by_player)
 	surface.create_entity{name = ani, position = {pos.x, pos.y+1}} --creates portal animation
 	local portal = surface.create_entity{name = base, position = pos, force = player.force} --creates new portal-base
 	if by_player then
-		script.raise_event(on_player_placed_portal_event, {player = player, portal = portal})
+		script.raise_event(on_player_placed_portal_event, {player_index = player.index, portal = portal})
 	end
 	portal.operable = false
 	portal.destructible = false
@@ -231,11 +231,11 @@ local function on_portal(player, portal)
 	end
 end
     
-local function try_teleport(player, exit_portal)	
+local function try_teleport(player, exit_portal, entrance_portal)	
 	local tick = game.tick
-	if exit_portal and exit_portal.valid then --does that base exist and is it valid?
+	if exit_portal and exit_portal.valid then
 		if (not global.teleport_delay[player.index]) or global.teleport_delay[player.index] < tick then
-			script.raise_event(on_player_teleported_event, {player = player, old_position = player.position, target_portal = exit_portal})
+			script.raise_event(on_player_teleported_event, {player_index = player.index, entrance_portal = entrance_portal, target_portal = exit_portal})
 			player.surface.create_entity({name="portal-enter", position=player.position})
 			player.teleport({exit_portal.position.x, exit_portal.position.y-0.9}, exit_portal.surface) --teleport player to the top of the exit_portal entity
 			exit_portal.surface.create_entity({name="portal-exit", position=exit_portal.position})
@@ -252,12 +252,12 @@ script.on_event(defines.events.on_tick, function(event)
 			local entry_portal_1 = on_portal(player, "portal-a")
 			if entry_portal_1 then --if on portal then teleport to other portal
 				local player_index_1 = global.a_numbers[entry_portal_1.unit_number]
-				try_teleport(player, global.b_portals[player_index_1]) --teleport to the b_portal with the same associated player_index as the portal the player is on
+				try_teleport(player, global.b_portals[player_index_1], entry_portal_1) --teleport to the b_portal with the same associated player_index as the portal the player is on
 			else
 				local entry_portal_2 = on_portal(player, "portal-b")
 				if entry_portal_2 then --if on portal then teleport to other portal
 					local player_index_2 = global.b_numbers[entry_portal_2.unit_number]
-					try_teleport(player, global.a_portals[player_index_2]) --teleport to the b_portal with the same associated player_index as the portal the player is on
+					try_teleport(player, global.a_portals[player_index_2], entry_portal_2) --teleport to the b_portal with the same associated player_index as the portal the player is on
 				end
 			end
 		end
@@ -268,7 +268,7 @@ remote.add_interface("portals",
 {
 --[[subscribing to my events:
 
-	script.on_event(remote.call("portals", "on_player_teleported"), function(event)
+	script.on_event(remote.call("portals", "get_on_player_teleported_event"), function(event)
 		--do your stuff
 	end)
 	WARNING: this has to be done within on_init and on_load, otherwise the game will error about the remote.call
@@ -280,12 +280,12 @@ remote.add_interface("portals",
 	end]]
 
 
-	on_player_placed_portal = function() return on_player_placed_portal_event end,
+	get_on_player_placed_portal_event = function() return on_player_placed_portal_event end,
 		-- event.portal = LuaEntity, the portal that was placed
-		-- event.player = LuaPlayer, the player that placed the portal, which is the player the portal belongs to
-	on_player_teleported = function() return on_player_teleported_event end,
-		-- event.player = LuaPlayer, the player that is teleporting
-		-- event.old_position = Position, the old position of the player
+		-- event.player_index = Index of the player that placed the portal, which is the player the portal belongs to
+	get_on_player_teleported_event = function() return on_player_teleported_event end,
+		-- event.player_index = Index of the player that is teleporting
+		-- event.entrance_portal = LuaEntity, the portal the player is teleporting from
 		-- event.target_portal = LuaEntity, the portal the player is teleporting to
 	build_portal_a = function(player, surface, position) build_portal(player, surface, "portal-a", "portal-animation-a", position, global.a_portals, false) end, --orange portal
 		-- position: Position of the new portal
