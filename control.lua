@@ -86,8 +86,8 @@ local on_player_placed_portal_event = script.generate_event_name()
 
 --destroy the animation of the base entity when given the base entity surface and position, and which animation to destroy:
 local function destroy_ani(surface, pos, which)
-	local entities = surface.find_entities_filtered{area={{pos.x-0.1,pos.y+0.9}, {pos.x+0.1,pos.y+1.1}}, name=which} --find the animation
-	if entities[1] then entities[1].destroy() end
+	local ani = surface.find_entities_filtered{area={{pos.x-0.1,pos.y+0.9}, {pos.x+0.1,pos.y+1.1}}, name=which, limit = 1}[1] --find the animation
+	if ani then ani.destroy() end
 end
 
 --destroy the label of the base entity when given the list the label is in and its text:
@@ -109,12 +109,9 @@ local function destroy_other_portal(list, player_index, ani)
 		--find the label and destroy it:
 		if list == global.a_portals then 
 			destroy_label(global.a_labels, player_index)
-		elseif list == global.b_portals then
-			destroy_label(global.b_labels, player_index)
-		end
-		if list == global.a_portals then
 			global.a_numbers[base.unit_number] = nil --that portal is no longer associated with a player_index
 		elseif list == global.b_portals then
+			destroy_label(global.b_labels, player_index)
 			global.b_numbers[base.unit_number] = nil
 		end
 		list[player_index] = nil --remove the base from the list
@@ -216,12 +213,7 @@ end)
 
 local function on_portal(player, portal)
 	local player_pos = player.position
-	local entities = player.surface.find_entities_filtered{area={{player_pos.x-0.7,player_pos.y-0.3}, {player_pos.x+0.7,player_pos.y+0.1}}, name = portal}
-	if entities[1] then
-		return entities[1]
-	else
-		return false
-	end
+	return player.surface.find_entities_filtered{area={{player_pos.x-0.7,player_pos.y-0.3}, {player_pos.x+0.7,player_pos.y+0.1}}, name = portal, force = player.force, limit = 1}[1]
 end
     
 local function try_teleport(player, exit_portal, entrance_portal)	
