@@ -164,11 +164,11 @@ script.on_event(defines.events.on_built_entity, function(event)
 			local pX=player.position.x
 			event.created_entity.destroy() --destroy portal which is just a placeholder entitiy
 			if X>=pX-max_dist and X<=pX+max_dist and Y>=pY-max_dist and Y<=pY+max_dist then
-				player.surface.create_entity{name = "portalgun-shoot-b", position = new_position}
+				player.surface.play_sound{path = "portalgun-shoot-b", position = new_position}
 				build_portal(player, player.surface, "portal-b", "portal-animation-b", new_position, global.b_portals, true)
 			end
 		else
-			player.surface.create_entity{name = "portalgun-shoot-b", position = new_position}
+			player.surface.play_sound{path = "portalgun-shoot-b", position = new_position}
 			build_portal(player, player.surface, "portal-b", "portal-animation-b", new_position, global.b_portals, true)
 		end
 	elseif event.created_entity.name == "portal" then --is portal normally placed?
@@ -176,7 +176,7 @@ script.on_event(defines.events.on_built_entity, function(event)
 		local player = game.players[event.player_index]
 		event.created_entity.destroy() --destroy portal which is just a placeholder entity
 		player.cursor_stack.set_stack{name="portal-gun", count = 1} --make player hold one portal gun, does not care if player already holds portal guns
-		player.surface.create_entity{name = "portalgun-shoot-a", position = new_position}
+		player.surface.play_sound{path = "portalgun-shoot-a", position = new_position}
 		build_portal(player, player.surface, "portal-a", "portal-animation-a", new_position, global.a_portals, true)
 	end
 end)
@@ -221,9 +221,9 @@ local function try_teleport(player, exit_portal, entrance_portal)
 	if exit_portal and exit_portal.valid then
 		if (not global.teleport_delay[player.index]) or global.teleport_delay[player.index] < tick then
 			script.raise_event(on_player_teleported_event, {player_index = player.index, entrance_portal = entrance_portal, target_portal = exit_portal})
-			player.surface.create_entity({name="portal-enter", position=player.position})
+			player.surface.play_sound({path="portal-enter", position=player.position})
 			player.teleport({exit_portal.position.x, exit_portal.position.y-0.9}, exit_portal.surface) --teleport player to the top of the exit_portal entity
-			exit_portal.surface.create_entity({name="portal-exit", position=exit_portal.position})
+			exit_portal.surface.play_sound({path="portal-exit", position=exit_portal.position})
 			global.teleport_delay[player.index] = tick + 47
 		end
 	end

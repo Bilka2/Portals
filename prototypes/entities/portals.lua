@@ -52,8 +52,8 @@ data:extend(
 		working_sound =
 		{
 			sound = { filename = "__Portals__/sounds/portal_ambient_loop1.ogg" },
-			apparent_volume = 0.1,
-			audible_distance_modifier = 0.75,
+			volume = 0.1,
+			audible_distance_modifier = 0.4,
 			probability = 1
 		},
 		connection_points =
@@ -75,7 +75,7 @@ data:extend(
 	},
 	
 	{
-		type = "smoke",
+		type = "smoke-with-trigger",
 		name = "portal-animation-a",
 		flags = {"not-repairable", "not-blueprintable", "not-deconstructable", "not-on-map"},
 		duration = 99999999, --hopefully long enough
@@ -127,8 +127,8 @@ data:extend(
 		working_sound =
 		{
 			sound = { filename = "__Portals__/sounds/portal_ambient_loop1.ogg" },
-			apparent_volume = 0.1,
-			audible_distance_modifier = 0.75,
+			volume = 0.1,
+			audible_distance_modifier = 0.4,
 			probability = 1
 		},
 		connection_points =
@@ -150,7 +150,7 @@ data:extend(
 	},
 	
 	{
-		type = "smoke",
+		type = "smoke-with-trigger",
 		name = "portal-animation-b",
 		flags = {"not-repairable", "not-blueprintable", "not-deconstructable", "not-on-map"},
 		duration = 99999999, --hopefully long enough
