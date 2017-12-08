@@ -7,10 +7,10 @@ local on_player_placed_portal_event = script.generate_event_name()
 -- UTILITIES --
 --get the portal this one is connected to
 local function get_opposite_portal(entity)
-	for _, table in pairs(global.portals) do
-		if table.b and table.b == entity then
+	for _, v in pairs(global.portals) do
+		if v.b and v.b == entity then
 			if v.a and v.a.valid then return v.a end
-		elseif table.a and table.a == entity then
+		elseif v.a and v.a == entity then
 			if v.b and v.b.valid then return v.b end
 		end
 	end
@@ -125,14 +125,17 @@ end)
 
 -- Events that run every tick/often: TELEPORTING THE PLAYER --
 
-local function on_portal(player, portal)
+local function on_portal(player)
 	local player_pos = player.position
-	return player.surface.find_entities_filtered{area={{player_pos.x-0.7,player_pos.y-0.3}, {player_pos.x+0.7,player_pos.y+0.1}}, name = portal, force = player.force, limit = 1}[1]
+	local entity = player.surface.find_entities_filtered{area={{player_pos.x-0.7,player_pos.y-0.3}, {player_pos.x+0.7,player_pos.y+0.1}}, type = "simple-entity-with-owner", force = player.force, limit = 1}[1]
+	if entity and entity.name:find("portal") then
+		return entity
+	end
 end
     
 local function try_teleport(player, exit_portal, entrance_portal)	
 	local tick = game.tick
-	if exit_portal and exit_portal.valid then
+	if exit_portal then
 		if (not global.teleport_delay[player.index]) or global.teleport_delay[player.index] < tick then
 			script.raise_event(on_player_teleported_event, {player_index = player.index, entrance_portal = entrance_portal, target_portal = exit_portal})
 			player.surface.play_sound({path="portal-enter", position=player.position})
@@ -148,16 +151,9 @@ script.on_event(defines.events.on_tick, function(event)
 	if event.tick % 2 ~= 0 then return end --if it's not divisible by 2 end function 
 	for index, player in pairs(game.connected_players) do
 		if player.character and not player.vehicle then --checks if player has a character (not god mode) and isn't in an vehicle
-			local entry_portal_1 = on_portal(player, "portal-a")
-			if entry_portal_1 then --if on portal then teleport to other portal
-				local player_index_1 = global.a_numbers[entry_portal_1.unit_number]
-				try_teleport(player, global.b_portals[player_index_1], entry_portal_1) --teleport to the b_portal with the same associated player_index as the portal the player is on
-			else
-				local entry_portal_2 = on_portal(player, "portal-b")
-				if entry_portal_2 then --if on portal then teleport to other portal
-					local player_index_2 = global.b_numbers[entry_portal_2.unit_number]
-					try_teleport(player, global.a_portals[player_index_2], entry_portal_2) --teleport to the b_portal with the same associated player_index as the portal the player is on
-				end
+			local portal = on_portal(player)
+			if portal then
+				try_teleport(player, get_opposite_portal(portal), portal)
 			end
 		end
 	end
