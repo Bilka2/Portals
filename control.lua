@@ -60,6 +60,22 @@ local on_player_teleported_event = script.generate_event_name() --uint
 local on_player_placed_portal_event = script.generate_event_name()
 
 
+local function get_opposite_portal(entity)
+	local portals = global.portals
+	for _, table in pairs(portals) do
+		if table.b and table.b == entity then
+			return v.a
+		elseif table.a and table.a == entity then
+			return v.b
+		end
+	end
+end
+
+
+local function get_players_portal(player_index, portal_type) -- example: 1, "a"
+	return global.portals[player_index] and global.portals[player_index][portal_type] or nil
+end
+
 --destroy the label of the base entity when given the base entity surface and position:
 local function destroy_label(surface, pos)
 	local label = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1] --find the label
