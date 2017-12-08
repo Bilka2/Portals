@@ -124,7 +124,6 @@ end)
 
 
 -- Events that run every tick/often: TELEPORTING THE PLAYER --
-
 local function on_portal(player)
 	local player_pos = player.position
 	local entity = player.surface.find_entities_filtered{area={{player_pos.x-0.7,player_pos.y-0.3}, {player_pos.x+0.7,player_pos.y+0.1}}, type = "simple-entity-with-owner", force = player.force, limit = 1}[1]
@@ -210,7 +209,6 @@ script.on_configuration_changed(function(event)
 	global.b_portals = nil
 	global.a_numbers = nil
 	global.b_numbers = nil
-
 end)
 
 remote.add_interface("portals",
