@@ -1,143 +1,80 @@
---Makes lists of portals and labels and unit_numbers on init
-script.on_init(function()
-	global.a_portals = {} --list[player_index] = portal
-	global.b_portals = {} --list[player_index] = portal
-	global.a_numbers = {} --list[unit_number] = player_index
-	global.b_numbers = {} --list[unit_number] = player_index
-	global.teleport_delay = {} --list[player_index] = game.tick + 47
-	global.disable_long_distance_placing = false
-end)
-
-script.on_configuration_changed(function(event)
-	if (not global.a_numbers) and global.a_labels then --both a and b numbers don't exist then because they were added in the same version, labels stills exists if we are in < 0.3.0, not afterwards
-		--since the number tables didn't exist I also have to migrate to the new entity for the portal bases... now called portal (yes, just portal) 
-		local a_portals = {}
-		for index,portal in pairs(global.a_portals) do
-			if portal.valid then
-				local new_portal = portal.surface.create_entity{name ="portal-a", position = portal.position, force = portal.force}
-				new_portal.operable = false
-				new_portal.destructible = false
-				portal.destroy()
-				local new_index = tonumber(index)
-				a_portals[new_index] = new_portal
-			end
-		end
-		global.a_portals = a_portals
-		local b_portals = {}
-		for index,portal in pairs(global.b_portals) do
-			if portal.valid then
-				local new_portal = portal.surface.create_entity{name ="portal-b", position = portal.position, force = portal.force}
-				new_portal.operable = false
-				new_portal.destructible = false
-				portal.destroy()
-				local new_index = tonumber(index)
-				b_portals[new_index] = new_portal
-			end
-		end
-		global.b_portals = b_portals
-		
-		--make indexes integers not strings, also replace the flying text with a one with a custom name so that it gets removed correctly when the mod is removed
-		local a_labels = {}
-		for index,label in pairs(global.a_labels) do
-			if label.valid then
-				local new_label = label.surface.create_entity({name="portal-label", position=label.position, text=label.text, color=label.color})
-				new_label.active = false
-				label.destroy()
-				local new_index = tonumber(index)
-				a_labels[new_index] = new_label
-			end
-		end
-		global.a_labels = a_labels
-		local b_labels = {}
-		for index,label in pairs(global.b_labels) do
-			if label.valid then
-				local new_label = label.surface.create_entity({name="portal-label", position=label.position, text=label.text, color=label.color})
-				new_label.active = false
-				label.destroy()
-				local new_index = tonumber(index)
-				b_labels[new_index] = new_label
-			end
-		end
-		global.b_labels = b_labels
-		
-		--add the unit numbers for the portals when migrating from version 0.2.4 or lower which used backer_name instead
-		global.a_numbers = {} 
-		for key,portal in pairs(global.a_portals) do
-			global.a_numbers[portal.unit_number] = key
-		end
-		global.b_numbers = {}
-		for key,portal in pairs(global.b_portals) do
-			global.b_numbers[portal.unit_number] = key
-		end
-	end
-	global.teleport_delay = global.teleport_delay or {}
-	global.disable_long_distance_placing = global.disable_long_distance_placing or false
-	
-	--[[if event.mod_changes["Portals"] then
-		local old_version = event.mod_changes["Portals"].old_version
-		if (old_version == ("0.2.9" or "0.2.8" or "0.2.7" or "0.2.6" or "0.2.5")) then
-			game.print("migration_text_here")
-		end
-	end]]
-end)
-
-
-
 -- CUSTOM EVENT HANDLING --
 --(remote interface is lower in the file, there I describe how to subscribe to my events)
 local on_player_teleported_event = script.generate_event_name() --uint
 local on_player_placed_portal_event = script.generate_event_name()
 
 
+-- UTILITIES --
+--get the portal this one is connected to
+local function get_opposite_portal(entity)
+	for _, v in pairs(global.portals) do
+		if v.b and v.b == entity then
+			if v.a and v.a.valid then return v.a end
+		elseif v.a and v.a == entity then
+			if v.b and v.b.valid then return v.b end
+		end
+	end
+end
+
+--get a portal if you know which one you want and who owns it
+local function get_players_portal(player_index, portal_type) -- example: 1, "a"   --DOES NOT CHECK .VALID!!!
+	return global.portals[player_index] and global.portals[player_index][portal_type] or nil
+end
+
+--gets which type the portal is (portal-a is a, portal-b is b)
+local function get_portals_type(entity)
+	return entity.name:find("-b") and "b" or "a"
+end
+
+--gets the player_index of the owner of the portal
+local function get_portals_owner(entity)
+	for player_index, table in pairs(global.portals) do
+		if (table.a and table.a == entity) or (table.b and table.b == entity) then
+			return player_index
+		end
+	end
+end
+
+--save the portal in the global table
+local function save_portal(player_index, portal_type, entity)
+	global.portals[player_index] = global.portals[player_index] or {}
+	global.portals[player_index][portal_type] = entity
+end
+
+
+-- BUILDING AND REMOVING --
 --destroy the label of the base entity when given the base entity surface and position:
 local function destroy_label(surface, pos)
 	local label = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1] --find the label
 	if label then label.destroy() end
 end
 
---destroy the old portal with that associated player_index, needs the list the portal is in
-local function destroy_other_portal(list, player_index)
-	local base = list[player_index]
-	if base and base.valid then --is there an already existing portal-base with the same associated player_index? 
-		--find the label and destroy it:
-		destroy_label(base.surface, base.position)
-		if list == global.a_portals then 
-			global.a_numbers[base.unit_number] = nil --that portal is no longer associated with a player_index
-		elseif list == global.b_portals then
-			global.b_numbers[base.unit_number] = nil
+--destroy the old portal with that associated player_index, needs which type the portal is of
+local function destroy_other_portal(player_index, portal_type)
+	local portal = get_players_portal(player_index, portal_type)
+	if portal then
+		if portal.valid then
+			destroy_label(portal.surface, portal.position)
+			portal.destroy()
 		end
-		list[player_index] = nil --remove the base from the list
-		base.destroy()
-	elseif base then
-		--[[if list == global.a_portals then
-			global.a_numbers[base.unit_number] = nil --that portal is no longer associated with a player_index
-		elseif list == global.b_portals then
-			global.b_numbers[base.unit_number] = nil
-		end]]--can't access unit_number of invalid entities
-		list[player_index] = nil --remove the base from the list because it's not valid
+		global.portals[player_index][portal_type] = nil --remove the portal from the list
 	end
 end
 
-local function build_portal(player, surface, base, pos, list, by_player)
-	local portal = surface.create_entity{name = base, position = pos, force = player.force} --creates new portal-base
+local function build_portal(player, surface, pos, portal_type, by_player)
+	local portal = surface.create_entity{name = "portal-" .. portal_type, position = pos, force = player.force} --creates new portal-base
 	if by_player then
 		script.raise_event(on_player_placed_portal_event, {player_index = player.index, portal = portal})
 	end
 	portal.operable = false
 	portal.destructible = false
-	destroy_other_portal(list, player.index)
-	list[player.index] = portal --adds new portal to list, sorted by player_index
+	destroy_other_portal(player.index, portal_type)
+	save_portal(player.index, portal_type, portal)
 	local portal_colour = {}
-	if base == "portal-a" then portal_colour = {r = 1, g = 0.55, b = 0.1} end --orange portals get orange number
-	if base == "portal-b" then portal_colour = {r = 0.5, g = 0.5, b = 1} end --blue portals get blue number
+	if portal_type == "a" then portal_colour = {r = 1, g = 0.55, b = 0.1} end --orange portals get orange number
+	if portal_type == "b" then portal_colour = {r = 0.5, g = 0.5, b = 1} end --blue portals get blue number
 	local label = surface.create_entity({name="portal-label", position={pos.x-0.5, pos.y-1}, text=player.index, color=portal_colour}) --creates portal text
 	label.active = false
-	--adds new label to the list, sorted by player_index:
-	if list == global.a_portals then 
-		global.a_numbers[portal.unit_number] = player.index --save the player_index that is associated with this portal
-	elseif list == global.b_portals then
-		global.b_numbers[portal.unit_number] = player.index
-	end
 end
 
 --Creates portal-b when portal is ghost-placed, creates portal-a when portal is normally placed:
@@ -154,11 +91,11 @@ script.on_event(defines.events.on_built_entity, function(event)
 			event.created_entity.destroy() --destroy portal which is just a placeholder entitiy
 			if X>=pX-max_dist and X<=pX+max_dist and Y>=pY-max_dist and Y<=pY+max_dist then
 				player.surface.play_sound{path = "portalgun-shoot-b", position = new_position}
-				build_portal(player, player.surface, "portal-b", new_position, global.b_portals, true)
+				build_portal(player, player.surface, new_position, "b", true)
 			end
 		else
 			player.surface.play_sound{path = "portalgun-shoot-b", position = new_position}
-			build_portal(player, player.surface, "portal-b", new_position, global.b_portals, true)
+			build_portal(player, player.surface, new_position, "b", true)
 		end
 	elseif event.created_entity.name == "portal" then --is portal normally placed?
 		local new_position = event.created_entity.position
@@ -166,50 +103,39 @@ script.on_event(defines.events.on_built_entity, function(event)
 		event.created_entity.destroy() --destroy portal which is just a placeholder entity
 		player.cursor_stack.set_stack{name="portal-gun", count = 1} --make player hold one portal gun, does not care if player already holds portal guns
 		player.surface.play_sound{path = "portalgun-shoot-a", position = new_position}
-		build_portal(player, player.surface, "portal-a", new_position, global.a_portals, true)
+		build_portal(player, player.surface, new_position, "a", true)
 	end
 end)
 
---destroy label, and base if the base entity is given
+--destroy label and base if the base entity is given
 local function destroy_portal_from_base(entity)
-	local pos = entity.position
-	local surface = entity.surface
-	if entity.name == "portal-a" then
-		destroy_label(surface, pos)
-		local player_index = global.a_numbers[entity.unit_number] --find the player_index associated with that portal
-		if player_index then
-			global.a_portals[player_index] = nil --remove the base from the list
-			global.a_numbers[entity.unit_number] = nil --that portal is no longer associated with a player_index
-		end
-		if entity.valid then entity.destroy() end
-	elseif entity.name == "portal-b" then
-		destroy_label(surface, pos)
-		local player_index = global.b_numbers[entity.unit_number]
-		if player_index then
-			global.b_portals[player_index] = nil
-			global.b_numbers[entity.unit_number] = nil
-		end
-		if entity.valid then entity.destroy() end
+	if not entity.name:find("portal") then return end
+	global.portals[get_portals_owner(entity)][get_portals_type(entity)] = nil --remove the portal from the list
+	if entity.valid then
+		destroy_label(entity.surface, entity.position)
+		entity.destroy()
 	end
 end
 
 --when base is mined/dies, destroy label, and base:
 script.on_event({defines.events.on_pre_player_mined_item, defines.events.on_entity_died}, function (event)
-	local entity = event.entity
-	destroy_portal_from_base(entity)
+	destroy_portal_from_base(event.entity)
 end)
 
 
---Events that run every tick/often: TELEPORTING THE PLAYER
+-- Events that run every tick/often: TELEPORTING THE PLAYER --
 
-local function on_portal(player, portal)
+local function on_portal(player)
 	local player_pos = player.position
-	return player.surface.find_entities_filtered{area={{player_pos.x-0.7,player_pos.y-0.3}, {player_pos.x+0.7,player_pos.y+0.1}}, name = portal, force = player.force, limit = 1}[1]
+	local entity = player.surface.find_entities_filtered{area={{player_pos.x-0.7,player_pos.y-0.3}, {player_pos.x+0.7,player_pos.y+0.1}}, type = "simple-entity-with-owner", force = player.force, limit = 1}[1]
+	if entity and entity.name:find("portal") then
+		return entity
+	end
 end
     
 local function try_teleport(player, exit_portal, entrance_portal)	
 	local tick = game.tick
-	if exit_portal and exit_portal.valid then
+	if exit_portal then
 		if (not global.teleport_delay[player.index]) or global.teleport_delay[player.index] < tick then
 			script.raise_event(on_player_teleported_event, {player_index = player.index, entrance_portal = entrance_portal, target_portal = exit_portal})
 			player.surface.play_sound({path="portal-enter", position=player.position})
@@ -225,19 +151,66 @@ script.on_event(defines.events.on_tick, function(event)
 	if event.tick % 2 ~= 0 then return end --if it's not divisible by 2 end function 
 	for index, player in pairs(game.connected_players) do
 		if player.character and not player.vehicle then --checks if player has a character (not god mode) and isn't in an vehicle
-			local entry_portal_1 = on_portal(player, "portal-a")
-			if entry_portal_1 then --if on portal then teleport to other portal
-				local player_index_1 = global.a_numbers[entry_portal_1.unit_number]
-				try_teleport(player, global.b_portals[player_index_1], entry_portal_1) --teleport to the b_portal with the same associated player_index as the portal the player is on
-			else
-				local entry_portal_2 = on_portal(player, "portal-b")
-				if entry_portal_2 then --if on portal then teleport to other portal
-					local player_index_2 = global.b_numbers[entry_portal_2.unit_number]
-					try_teleport(player, global.a_portals[player_index_2], entry_portal_2) --teleport to the b_portal with the same associated player_index as the portal the player is on
-				end
+			local portal = on_portal(player)
+			if portal then
+				try_teleport(player, get_opposite_portal(portal), portal)
 			end
 		end
 	end
+end)
+
+
+-- INIT --
+--Makes lists of portals on init
+script.on_init(function()
+	global.portals = {} --list[player_index] = {a = LuaEntity, b = LuaEntity}
+	global.teleport_delay = {} --list[player_index] = game.tick + 47
+	global.disable_long_distance_placing = false
+end)
+
+script.on_configuration_changed(function(event)	
+	if not event.mod_changes["Portals"] then return end
+	global.teleport_delay = global.teleport_delay or {}
+	global.disable_long_distance_placing = global.disable_long_distance_placing or false
+	
+	local old_version = event.mod_changes["Portals"].old_version
+	--no migration from <= 0.2.3
+	if old_version:match("^0.1") then
+		error("Migrating from versions older than 0.2.3 of the mod is not supported. Use version 0.2.5 to migrate from those version and then use this version again.")
+	end
+	local bad_versions = {"0.2.1", "0.2.2", "0.2.3"}
+	for _, v in pairs(bad_versions) do
+		if old_version == v then
+			error("Migrating from versions older than 0.2.3 of the mod is not supported. Use version 0.2.5 to migrate from those version and then use this version again.")
+		end
+	end
+	
+	global.portals = {}
+	for _, surface in pairs(game.surfaces) do
+		local entities = surface.find_entities_filtered{name="portal-a"}
+		if  not entities then return end
+		for _, entity in pairs(entities) do
+			local pos = entity.position
+			local label_text = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1].text
+			if label_text then
+				save_portal(tonumber(label_text), "a", entity)
+			end
+		end
+		local entities = surface.find_entities_filtered{name="portal-b"}
+		if  not entities then return end
+		for _, entity in pairs(entities) do
+			local pos = entity.position
+			local label_text = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1].text
+			if label_text then
+				save_portal(tonumber(label_text), "b", entity)
+			end
+		end
+	end
+	global.a_portals = nil
+	global.b_portals = nil
+	global.a_numbers = nil
+	global.b_numbers = nil
+
 end)
 
 remote.add_interface("portals",
@@ -263,11 +236,11 @@ remote.add_interface("portals",
 		-- event.player_index = Index of the player that is teleporting
 		-- event.entrance_portal = LuaEntity, the portal the player is teleporting from
 		-- event.target_portal = LuaEntity, the portal the player is teleporting to
-	build_portal_a = function(player, surface, position) build_portal(player, surface, "portal-a", position, global.a_portals, false) end, --orange portal
+	build_portal_a = function(player, surface, position) build_portal(player, surface, position, "a", false) end, --orange portal
 		-- position: Position of the new portal
 		-- surface: LuaSurface, the surface of the new portal
 		-- player: LuaPlayer that the portal belongs to. This player can't have more than one pair, build_portal will delete any excess portals
-	build_portal_b = function(player, surface, position) build_portal(player, surface, "portal-b", position, global.b_portals, false) end, --blue portal
+	build_portal_b = function(player, surface, position) build_portal(player, surface, position, "b", false) end, --blue portal
 		-- position: Position of the new portal
 		-- surface: LuaSurface, the surface of the new portal
 		-- player: LuaPlayer that the portal belongs to. This player can't have more than one pair, build_portal will delete any excess portals
