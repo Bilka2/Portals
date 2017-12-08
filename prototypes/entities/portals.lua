@@ -1,11 +1,10 @@
---portals: portal-x are the collision + selections boxes + mining stuff; portal-animation-x are the animation/graphics in general
+--portals
 data:extend(
 {
 	{
 		type = "simple-entity-with-owner",
 		name = "portal", --this is what gets placed by the item
 		render_layer = "object",
-		icon = "__Portals__/graphics/portal-gun.png",
 		flags = {"player-creation", "not-deconstructable"},
 		selectable_in_game = false,
 		minable = {mining_time = 5, result = nil},
@@ -27,66 +26,19 @@ data:extend(
 	},
 	
 	{
-		type = "electric-pole",
+		type = "simple-entity-with-owner",
 		name = "portal-a",
 		flags = {"player-creation", "not-blueprintable", "not-deconstructable"},
 		map_color = {r=1, g=0.5, b=0},
 		placeable_by = {item="portal-gun", count= 1},
-		selectable_in_game = true,
 		minable = {mining_time = 0.7, result = nil},
 		max_health = 20,
 		collision_box = {{0, -0.6}, {0, 0.6}},
 		collision_mask = { "item-layer", "object-layer", "water-tile"},
 		selection_box = {{-0.5, -0.9}, {0.5, 0.9}},
-		resistances = {},
-		maximum_wire_distance = 0,
-		supply_area_distance = 0,
-		pictures =
+		random_animation_offset = false,
+		animations =
 		{
-			filename = "__Portals__/graphics/null.png",
-			priority = "high",
-			width = 1,
-			height = 1,
-			direction_count = 1,
-		},
-		working_sound =
-		{
-			sound = { filename = "__Portals__/sounds/portal_ambient_loop1.ogg" },
-			volume = 0.1,
-			audible_distance_modifier = 0.4,
-			probability = 1
-		},
-		connection_points =
-		{
-			{
-				wire = {},
-				shadow = {}
-			},
-		},
-		radius_visualisation_picture =
-		{
-			filename = "__Portals__/graphics/null.png",
-			priority = "high",
-			width = 1,
-			height = 1,
-		},
-		tile_width = 1,
-		tile_height = 2,
-	},
-	
-	{
-		type = "smoke-with-trigger",
-		name = "portal-animation-a",
-		flags = {"not-repairable", "not-blueprintable", "not-deconstructable", "not-on-map"},
-		duration = 99999999, --hopefully long enough
-		color = { r = 1, g = 1, b = 1, a = 1 },
-		cyclic = true,
-		affected_by_wind = false,
-		show_when_smoke_off = true,
-		movement_slow_down_factor = 0,
-		vertical_speed_slowdown = 0,
-		render_layer = "floor",
-		animation =
 		{
 			filename = "__Portals__/graphics/entity_portal-a.png",
 			priority = "high",
@@ -96,33 +48,7 @@ data:extend(
 			line_length = 8,
 			animation_speed = 0.5,
 			scale = 0.5,
-		},
-		tile_width = 1,
-		tile_height = 2,
-	},
-	
-	{
-		type = "electric-pole",
-		name = "portal-b",
-		flags = {"player-creation", "not-blueprintable", "not-deconstructable"},
-		map_color = {r=0.5, g=0.5, b=1},
-		placeable_by = {item="portal-gun", count= 1},
-		selectable_in_game = true,
-		minable = {mining_time = 0.7, result = nil},
-		max_health = 20,
-		collision_box = {{0, -0.6}, {0, 0.6}},
-		collision_mask = { "item-layer", "object-layer", "water-tile"},
-		selection_box = {{-0.5, -0.9}, {0.5, 0.9}},
-		resistances = {},
-		maximum_wire_distance = 0,
-		supply_area_distance = 0,
-		pictures =
-		{
-			filename = "__Portals__/graphics/null.png",
-			priority = "high",
-			width = 1,
-			height = 1,
-			direction_count = 1,
+		}
 		},
 		working_sound =
 		{
@@ -131,37 +57,25 @@ data:extend(
 			audible_distance_modifier = 0.4,
 			probability = 1
 		},
-		connection_points =
-		{
-			{
-				wire = {},
-				shadow = {}
-			},
-		},
-		radius_visualisation_picture =
-		{
-			filename = "__Portals__/graphics/null.png",
-			priority = "high",
-			width = 1,
-			height = 1,
-		},
+		render_layer = "floor",
 		tile_width = 1,
 		tile_height = 2,
 	},
 	
 	{
-		type = "smoke-with-trigger",
-		name = "portal-animation-b",
-		flags = {"not-repairable", "not-blueprintable", "not-deconstructable", "not-on-map"},
-		duration = 99999999, --hopefully long enough
-		color = { r = 1, g = 1, b = 1, a = 1 },
-		cyclic = true,
-		affected_by_wind = false,
-		show_when_smoke_off = true,
-		movement_slow_down_factor = 0,
-		vertical_speed_slowdown = 0,
-		render_layer = "floor",
-		animation =
+		type = "simple-entity-with-owner",
+		name = "portal-b",
+		flags = {"player-creation", "not-blueprintable", "not-deconstructable"},
+		map_color = {r=0.5, g=0.5, b=1},
+		placeable_by = {item="portal-gun", count= 1},
+		minable = {mining_time = 0.7, result = nil},
+		max_health = 20,
+		collision_box = {{0, -0.6}, {0, 0.6}},
+		collision_mask = { "item-layer", "object-layer", "water-tile"},
+		selection_box = {{-0.5, -0.9}, {0.5, 0.9}},
+		random_animation_offset = false,
+		animations =
+		{
 		{
 			filename = "__Portals__/graphics/entity_portal-b.png",
 			priority = "high",
@@ -171,16 +85,24 @@ data:extend(
 			line_length = 8,
 			animation_speed = 0.5,
 			scale = 0.5,
+		}
 		},
+		working_sound =
+		{
+			sound = { filename = "__Portals__/sounds/portal_ambient_loop1.ogg" },
+			volume = 0.1,
+			audible_distance_modifier = 0.4,
+			probability = 1
+		},
+		render_layer = "floor",
 		tile_width = 1,
 		tile_height = 2,
 	},
-	
 	 --just a renamed flying-text so that when my mod gets removed the text also gets removed
 	{
 		type = "flying-text",
 		name = "portal-label",
-		flags = {"not-on-map"},
+		flags = {"not-on-map", "placeable-off-grid"},
 		time_to_live = 150,
 		speed = 0.05
 	},
