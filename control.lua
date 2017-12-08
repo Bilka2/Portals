@@ -1,84 +1,55 @@
 --Makes lists of portals and labels and unit_numbers on init
 script.on_init(function()
-	global.a_portals = {} --list[player_index] = portal
-	global.b_portals = {} --list[player_index] = portal
-	global.a_numbers = {} --list[unit_number] = player_index
-	global.b_numbers = {} --list[unit_number] = player_index
+	global.portals = {} --list[player_index] = {a = LuaEntity, b = LuaEntity}
 	global.teleport_delay = {} --list[player_index] = game.tick + 47
 	global.disable_long_distance_placing = false
 end)
 
-script.on_configuration_changed(function(event)
-	if (not global.a_numbers) and global.a_labels then --both a and b numbers don't exist then because they were added in the same version, labels stills exists if we are in < 0.3.0, not afterwards
-		--since the number tables didn't exist I also have to migrate to the new entity for the portal bases... now called portal (yes, just portal) 
-		local a_portals = {}
-		for index,portal in pairs(global.a_portals) do
-			if portal.valid then
-				local new_portal = portal.surface.create_entity{name ="portal-a", position = portal.position, force = portal.force}
-				new_portal.operable = false
-				new_portal.destructible = false
-				portal.destroy()
-				local new_index = tonumber(index)
-				a_portals[new_index] = new_portal
-			end
-		end
-		global.a_portals = a_portals
-		local b_portals = {}
-		for index,portal in pairs(global.b_portals) do
-			if portal.valid then
-				local new_portal = portal.surface.create_entity{name ="portal-b", position = portal.position, force = portal.force}
-				new_portal.operable = false
-				new_portal.destructible = false
-				portal.destroy()
-				local new_index = tonumber(index)
-				b_portals[new_index] = new_portal
-			end
-		end
-		global.b_portals = b_portals
+script.on_configuration_changed(function(event)	
+	if event.mod_changes["Portals"] then
+		global.teleport_delay = global.teleport_delay or {}
+		global.disable_long_distance_placing = global.disable_long_distance_placing or false
 		
-		--make indexes integers not strings, also replace the flying text with a one with a custom name so that it gets removed correctly when the mod is removed
-		local a_labels = {}
-		for index,label in pairs(global.a_labels) do
-			if label.valid then
-				local new_label = label.surface.create_entity({name="portal-label", position=label.position, text=label.text, color=label.color})
-				new_label.active = false
-				label.destroy()
-				local new_index = tonumber(index)
-				a_labels[new_index] = new_label
-			end
-		end
-		global.a_labels = a_labels
-		local b_labels = {}
-		for index,label in pairs(global.b_labels) do
-			if label.valid then
-				local new_label = label.surface.create_entity({name="portal-label", position=label.position, text=label.text, color=label.color})
-				new_label.active = false
-				label.destroy()
-				local new_index = tonumber(index)
-				b_labels[new_index] = new_label
-			end
-		end
-		global.b_labels = b_labels
-		
-		--add the unit numbers for the portals when migrating from version 0.2.4 or lower which used backer_name instead
-		global.a_numbers = {} 
-		for key,portal in pairs(global.a_portals) do
-			global.a_numbers[portal.unit_number] = key
-		end
-		global.b_numbers = {}
-		for key,portal in pairs(global.b_portals) do
-			global.b_numbers[portal.unit_number] = key
-		end
-	end
-	global.teleport_delay = global.teleport_delay or {}
-	global.disable_long_distance_placing = global.disable_long_distance_placing or false
-	
-	--[[if event.mod_changes["Portals"] then
 		local old_version = event.mod_changes["Portals"].old_version
-		if (old_version == ("0.2.9" or "0.2.8" or "0.2.7" or "0.2.6" or "0.2.5")) then
-			game.print("migration_text_here")
+		--no migration from <= 0.2.3
+		if old_version:match("^0.1") then
+			error("Migrating from versions older than 0.2.3 of the mod is not supported. Use version 0.2.5 to migrate from those version and then use this version again.")
 		end
-	end]]
+		local bad_versions = {"0.2.1", "0.2.2", "0.2.3"}
+		for _, v in pairs(bad_versions) do
+			if old_version == v then
+				error("Migrating from versions older than 0.2.3 of the mod is not supported. Use version 0.2.5 to migrate from those version and then use this version again.")
+			end
+		end
+		
+		global.portals = {}
+		for _, surface in pairs(game.surfaces) do
+			local entities = surface.find_entities_filtered{name="portal-a"}
+			if  not entities then return end
+			for _, entity in pairs(entities) do
+				local pos = entity.position
+				local label_text = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1].text
+				if label_text then
+					global.portals[tonumber(label_text)] = global.portals[tonumber(label_text)] or {}
+					global.portals[tonumber(label_text)]["a"] = entity
+				end
+			end
+			local entities = surface.find_entities_filtered{name="portal-b"}
+			if  not entities then return end
+			for _, entity in pairs(entities) do
+				local pos = entity.position
+				local label_text = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1].text
+				if label_text then
+					global.portals[tonumber(label_text)] = global.portals[tonumber(label_text)] or {}
+					global.portals[tonumber(label_text)]["b"] = entity
+				end
+			end
+		end
+		global.a_portals = nil
+		global.b_portals = nil
+		global.a_numbers = nil
+		global.b_numbers = nil
+	end
 end)
 
 
