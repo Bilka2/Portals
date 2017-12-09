@@ -23,7 +23,7 @@ end
 
 --gets which type the portal is (portal-a is a, portal-b is b)
 local function get_portals_type(entity)
-	return entity.name:find("-b") and "b" or "a"
+	return entity.name:match(%-[ab])
 end
 
 --gets the player_index of the owner of the portal
@@ -73,8 +73,7 @@ local function build_portal(player, surface, pos, portal_type, by_player)
 	local portal_colour = {}
 	if portal_type == "a" then portal_colour = {r = 1, g = 0.55, b = 0.1} end --orange portals get orange number
 	if portal_type == "b" then portal_colour = {r = 0.5, g = 0.5, b = 1} end --blue portals get blue number
-	local label = surface.create_entity({name="portal-label", position={pos.x-0.5, pos.y-1}, text=player.index, color=portal_colour}) --creates portal text
-	label.active = false
+	surface.create_entity({name="portal-label", position={pos.x-0.5, pos.y-1}, text=player.index, color=portal_colour}) --creates portal text
 end
 
 --Creates portal-b when portal is ghost-placed, creates portal-a when portal is normally placed:
@@ -146,8 +145,7 @@ local function try_teleport(player, exit_portal, entrance_portal)
 end
 
 --tries to teleport when player connected, has character, not in vehicle:
-script.on_event(defines.events.on_tick, function(event)
-	if event.tick % 2 ~= 0 then return end --if it's not divisible by 2 end function 
+script.on_event(defines.events.on_player_changed_position, function(event)
 	for index, player in pairs(game.connected_players) do
 		if player.character and not player.vehicle then --checks if player has a character (not god mode) and isn't in an vehicle
 			local portal = on_portal(player)
