@@ -23,7 +23,7 @@ end
 
 --gets which type the portal is (portal-a is a, portal-b is b)
 local function get_portals_type(entity)
-	return entity.name:match(%-[ab])
+	return entity.name:find("-b") and "b" or "a"
 end
 
 --gets the player_index of the owner of the portal
@@ -93,6 +93,7 @@ script.on_event(defines.events.on_built_entity, function(event)
 				build_portal(player, player.surface, new_position, "b", true)
 			end
 		else
+			event.created_entity.destroy()
 			player.surface.play_sound{path = "portalgun-shoot-b", position = new_position}
 			build_portal(player, player.surface, new_position, "b", true)
 		end
@@ -167,10 +168,10 @@ end)
 
 script.on_configuration_changed(function(event)	
 	if not event.mod_changes["Portals"] then return end
+	local old_version = event.mod_changes["Portals"].old_version
+	if not old_version then return end
 	global.teleport_delay = global.teleport_delay or {}
 	global.disable_long_distance_placing = global.disable_long_distance_placing or false
-	
-	local old_version = event.mod_changes["Portals"].old_version
 	--no migration from <= 0.2.3
 	if old_version:match("^0.1") then
 		error("Migrating from versions older than 0.2.3 of the mod is not supported. Use version 0.2.5 to migrate from those version and then use this version again.")
