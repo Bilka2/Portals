@@ -40,6 +40,7 @@ data:extend(
 		name = "portal-gun",
 		subgroup = "transport",
 		icon = "__Portals__/graphics/portal-gun.png",
+		icon_size = 32,
 		flags = { "goes-to-quickbar" },
 		order = "a",
 		place_result="portal",

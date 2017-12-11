@@ -79,6 +79,13 @@ disable_long_distance_placing: function(bool)
 
 ## Changelog
 
+0.3.0
+
+- Update for 0.16
+- Made portals only one entity
+- Reworked how portals were saved
+- Removed teh ability to migrate from mod versions <= 0.2.3
+
 0.2.9
 
 - Renamed remote functions related to events

@@ -84,7 +84,7 @@ data:extend(
 			},
 			{
 				type = "area",
-				perimeter = 3,
+				radius = 3,
 				action_delivery =
 				{
 					type = "instant",
