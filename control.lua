@@ -186,21 +186,23 @@ script.on_configuration_changed(function(event)
 	global.portals = {}
 	for _, surface in pairs(game.surfaces) do
 		local entities = surface.find_entities_filtered{name="portal-a"}
-		if  not entities then return end
-		for _, entity in pairs(entities) do
-			local pos = entity.position
-			local label_text = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1].text
-			if label_text then
-				save_portal(tonumber(label_text), "a", entity)
+		if entities then
+			for _, entity in pairs(entities) do
+				local pos = entity.position
+				local label_text = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1].text
+				if label_text then
+					save_portal(tonumber(label_text), "a", entity)
+				end
 			end
 		end
 		local entities = surface.find_entities_filtered{name="portal-b"}
-		if  not entities then return end
-		for _, entity in pairs(entities) do
-			local pos = entity.position
-			local label_text = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1].text
-			if label_text then
-				save_portal(tonumber(label_text), "b", entity)
+		if entities then
+			for _, entity in pairs(entities) do
+				local pos = entity.position
+				local label_text = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1].text
+				if label_text then
+					save_portal(tonumber(label_text), "b", entity)
+				end
 			end
 		end
 	end
@@ -208,6 +210,23 @@ script.on_configuration_changed(function(event)
 	global.b_portals = nil
 	global.a_numbers = nil
 	global.b_numbers = nil
+	--deleting orphaned numbers because of https://forums.factorio.com/viewtopic.php?p=327372#p327372 and the 3 following posts
+	for _, surface in pairs(game.surfaces) do
+		local entities = surface.find_entities_filtered{name="portal-label"}
+		if entities then
+			log("Found " .. table_size(entities) .. " portal-labels")
+			local orphaned_numbers_count = 0
+			for _, entity in pairs(entities) do
+				local pos = entity.position
+				local portal = surface.find_entities_filtered{position={pos.x+0.5, pos.y+1}, type = "simple-entity-with-owner", limit = 1}[1]
+				if not portal then
+					entity.destroy()
+					orphaned_numbers_count = orphaned_numbers_count + 1
+				end
+			end
+			log("Deleted " .. tostring(orphaned_numbers_count) .. " orphaned labels on " .. surface.name)
+		end
+	end
 end)
 
 remote.add_interface("portals",

@@ -79,12 +79,18 @@ disable_long_distance_placing: function(bool)
 
 ## Changelog
 
+0.3.1
+
+- Fixed that portals could be rotated, which lead to orphaned numbers (https://forums.factorio.com/viewtopic.php?p=328141#p328141)
+- Added a script to remove orphaned numbers from the world when it is loaded in this version, this is run automatically
+- Fixed migration
+
 0.3.0
 
 - Update for 0.16
 - Made portals only one entity
 - Reworked how portals were saved
-- Removed teh ability to migrate from mod versions <= 0.2.3
+- Removed the ability to migrate from mod versions <= 0.2.3
 
 0.2.9
 

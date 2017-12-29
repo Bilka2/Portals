@@ -2,9 +2,9 @@
 data:extend(
 {
 	{
-		type = "simple-entity-with-owner",
+		type = "container", --so it cant be rotated
 		name = "portal", --this is what gets placed by the item
-		render_layer = "object",
+		inventory_size = 1,
 		flags = {"player-creation", "not-deconstructable"},
 		selectable_in_game = false,
 		minable = {mining_time = 5, result = nil},
@@ -20,7 +20,6 @@ data:extend(
 		collision_box = {{0, -0.6}, {0, 0.6}},
 		collision_mask = { "item-layer", "object-layer", "water-tile"},
 		selection_box = {{-0.5, -0.9}, {0.5, 0.9}},
-		drawing_box = {{0,0}, {0,0}},
 		tile_width = 1,
 		tile_height = 2,
 	},
