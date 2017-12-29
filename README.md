@@ -79,6 +79,10 @@ disable_long_distance_placing: function(bool)
 
 ## Changelog
 
+0.3.2
+
+- Fixed migration of broken portals
+
 0.3.1
 
 - Fixed that portals could be rotated, which lead to orphaned numbers (https://forums.factorio.com/viewtopic.php?p=328141#p328141)

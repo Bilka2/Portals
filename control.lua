@@ -182,34 +182,35 @@ script.on_configuration_changed(function(event)
 			error("Migrating from versions older than 0.2.3 of the mod is not supported. Use version 0.2.5 to migrate from those version and then use this version again.")
 		end
 	end
-	
-	global.portals = {}
-	for _, surface in pairs(game.surfaces) do
-		local entities = surface.find_entities_filtered{name="portal-a"}
-		if entities then
-			for _, entity in pairs(entities) do
-				local pos = entity.position
-				local label_text = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1].text
-				if label_text then
-					save_portal(tonumber(label_text), "a", entity)
+	if not global.portals then --no need to rerun if it already exists
+		global.portals = {}
+		for _, surface in pairs(game.surfaces) do
+			local entities = surface.find_entities_filtered{name="portal-a"}
+			if entities then
+				for _, entity in pairs(entities) do
+					local pos = entity.position
+					local label = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1]
+					if label and label.text then
+						save_portal(tonumber(label_text), "a", entity)
+					end
+				end
+			end
+			local entities = surface.find_entities_filtered{name="portal-b"}
+			if entities then
+				for _, entity in pairs(entities) do
+					local pos = entity.position
+					local label = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1]
+					if label and label.text then
+						save_portal(tonumber(label_text), "b", entity)
+					end
 				end
 			end
 		end
-		local entities = surface.find_entities_filtered{name="portal-b"}
-		if entities then
-			for _, entity in pairs(entities) do
-				local pos = entity.position
-				local label_text = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1].text
-				if label_text then
-					save_portal(tonumber(label_text), "b", entity)
-				end
-			end
-		end
+		global.a_portals = nil
+		global.b_portals = nil
+		global.a_numbers = nil
+		global.b_numbers = nil
 	end
-	global.a_portals = nil
-	global.b_portals = nil
-	global.a_numbers = nil
-	global.b_numbers = nil
 	--deleting orphaned numbers because of https://forums.factorio.com/viewtopic.php?p=327372#p327372 and the 3 following posts
 	for _, surface in pairs(game.surfaces) do
 		local entities = surface.find_entities_filtered{name="portal-label"}
