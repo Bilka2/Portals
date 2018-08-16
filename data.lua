@@ -1,6 +1,6 @@
 require("prototypes.entities.portals")
 require("prototypes.entities.grenade")
-require("prototypes.entities.sounds")
+require("prototypes.sounds")
 
 data:extend(
 {

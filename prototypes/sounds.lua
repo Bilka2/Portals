@@ -1,4 +1,4 @@
---sounds (explosions) for teleporting
+--sounds for teleporting
 data:extend(
 {
 	{

@@ -79,6 +79,10 @@ disable_long_distance_placing: function(bool)
 
 ## Changelog
 
+0.3.3
+
+- Added setting to not number to the portals of the first player - useful in singleplayer
+
 0.3.2
 
 - Fixed migration of broken portals

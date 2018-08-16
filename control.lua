@@ -63,17 +63,20 @@ end
 
 local function build_portal(player, surface, pos, portal_type, by_player)
 	local portal = surface.create_entity{name = "portal-" .. portal_type, position = pos, force = player.force} --creates new portal-base
+  local index = player.index
 	if by_player then
-		script.raise_event(on_player_placed_portal_event, {player_index = player.index, portal = portal})
+		script.raise_event(on_player_placed_portal_event, {player_index = index, portal = portal})
 	end
 	portal.operable = false
 	portal.destructible = false
-	destroy_other_portal(player.index, portal_type)
-	save_portal(player.index, portal_type, portal)
-	local portal_colour = {}
-	if portal_type == "a" then portal_colour = {r = 1, g = 0.55, b = 0.1} end --orange portals get orange number
-	if portal_type == "b" then portal_colour = {r = 0.5, g = 0.5, b = 1} end --blue portals get blue number
-	surface.create_entity({name="portal-label", position={pos.x-0.5, pos.y-1}, text=player.index, color=portal_colour}) --creates portal text
+	destroy_other_portal(index, portal_type)
+	save_portal(index, portal_type, portal)
+  if index ~= 1 or settings.global["portals-number-portal-pair-one"].value then
+    local portal_colour = {}
+    if portal_type == "a" then portal_colour = {r = 1, g = 0.55, b = 0.1} end --orange portals get orange number
+    if portal_type == "b" then portal_colour = {r = 0.5, g = 0.5, b = 1} end --blue portals get blue number
+    surface.create_entity({name="portal-label", position={pos.x-0.5, pos.y-1}, text=index, color=portal_colour}) --creates portal text
+  end
 end
 
 --Creates portal-b when portal is ghost-placed, creates portal-a when portal is normally placed:
