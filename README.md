@@ -81,7 +81,7 @@ disable_long_distance_placing: function(bool)
 
 0.3.3
 
-- Added setting to not number to the portals of the first player - useful in singleplayer
+- Added setting to not number the portals of the first player - useful in singleplayer
 
 0.3.2
 
