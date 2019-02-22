@@ -94,14 +94,5 @@ data:extend(
     render_layer = "floor",
     tile_width = 1,
     tile_height = 2,
-  },
-  
-   --just a renamed flying-text so that when my mod gets removed the text also gets removed
-  {
-    type = "flying-text",
-    name = "portal-label",
-    flags = {"not-on-map", "placeable-off-grid"},
-    time_to_live = 4294967295,
-    speed = 0
   }
 })

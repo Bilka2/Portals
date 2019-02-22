@@ -43,18 +43,12 @@ end
 
 
 -- BUILDING AND REMOVING --
---destroy the label of the base entity when given the base entity surface and position:
-local function destroy_label(surface, pos)
-  local label = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1] --find the label
-  if label then label.destroy() end
-end
 
 --destroy the old portal with that associated player_index, needs which type the portal is of
 local function destroy_other_portal(player_index, portal_type)
   local portal = get_players_portal(player_index, portal_type)
   if portal then
     if portal.valid then
-      destroy_label(portal.surface, portal.position)
       portal.destroy()
     end
     global.portals[player_index][portal_type] = nil --remove the portal from the list
@@ -71,11 +65,11 @@ local function build_portal(player, surface, pos, portal_type, by_player)
   portal.destructible = false
   destroy_other_portal(index, portal_type)
   save_portal(index, portal_type, portal)
-  if index ~= 1 or settings.global["portals-number-portal-pair-one"].value then
+  if index ~= 1 or not settings.global["portals-dont-number-portal-pair-one"].value then
     local portal_colour = {}
     if portal_type == "a" then portal_colour = {r = 1, g = 0.55, b = 0.1} end --orange portals get orange number
     if portal_type == "b" then portal_colour = {r = 0.5, g = 0.5, b = 1} end --blue portals get blue number
-    surface.create_entity({name="portal-label", position={pos.x-0.5, pos.y-1}, text=index, color=portal_colour}) --creates portal text
+    rendering.draw_text({ text=index, target=portal, target_offset={-0.5, -1}, surface=surface, color=portal_colour }) --creates portal text
   end
 end
 
@@ -110,17 +104,16 @@ script.on_event(defines.events.on_built_entity, function(event)
   end
 end)
 
---destroy label and base if the base entity is given
+--destroy portal if the base entity is given
 local function destroy_portal_from_base(entity)
   if not entity.name:find("portal") then return end
   global.portals[get_portals_owner(entity)][get_portals_type(entity)] = nil --remove the portal from the list
   if entity.valid then
-    destroy_label(entity.surface, entity.position)
     entity.destroy()
   end
 end
 
---when base is mined/dies, destroy label, and base:
+--when base is mined/dies, destroy portal:
 script.on_event({defines.events.on_pre_player_mined_item, defines.events.on_entity_died}, function (event)
   destroy_portal_from_base(event.entity)
 end)
@@ -175,62 +168,19 @@ script.on_configuration_changed(function(event)
   if not old_version then return end
   global.teleport_delay = global.teleport_delay or {}
   global.disable_long_distance_placing = global.disable_long_distance_placing or false
-  --no migration from <= 0.2.3
-  if old_version:match("^0.1") then
-    error("Migrating from versions older than 0.2.3 of the mod is not supported. Use version 0.2.5 to migrate from those version and then use this version again.")
+  --no migration from < 0.3.3
+  if old_version:match("^0.1") or old_version:match("^0.2") then
+    error("Migrating from versions older than 0.3.3 of the mod is not supported. Use version 0.3.3 to migrate from those version and then use this version again.")
   end
-  local bad_versions = {"0.2.1", "0.2.2", "0.2.3"}
+  local bad_versions = {"0.3.0", "0.3.1", "0.3.2"}
   for _, v in pairs(bad_versions) do
     if old_version == v then
-      error("Migrating from versions older than 0.2.3 of the mod is not supported. Use version 0.2.5 to migrate from those version and then use this version again.")
+      error("Migrating from versions older than 0.3.3 of the mod is not supported. Use version 0.3.3 to migrate from those version and then use this version again.")
     end
   end
-  if not global.portals then --no need to rerun if it already exists
-    global.portals = {}
-    for _, surface in pairs(game.surfaces) do
-      local entities = surface.find_entities_filtered{name="portal-a"}
-      if entities then
-        for _, entity in pairs(entities) do
-          local pos = entity.position
-          local label = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1]
-          if label and label.text then
-            save_portal(tonumber(label_text), "a", entity)
-          end
-        end
-      end
-      local entities = surface.find_entities_filtered{name="portal-b"}
-      if entities then
-        for _, entity in pairs(entities) do
-          local pos = entity.position
-          local label = surface.find_entities_filtered{area={{pos.x-0.5, pos.y-1}, {pos.x-0.3, pos.y-0.8}}, name="portal-label", limit = 1}[1]
-          if label and label.text then
-            save_portal(tonumber(label_text), "b", entity)
-          end
-        end
-      end
-    end
-    global.a_portals = nil
-    global.b_portals = nil
-    global.a_numbers = nil
-    global.b_numbers = nil
-  end
-  --deleting orphaned numbers because of https://forums.factorio.com/viewtopic.php?p=327372#p327372 and the 3 following posts
-  for _, surface in pairs(game.surfaces) do
-    local entities = surface.find_entities_filtered{name="portal-label"}
-    if entities then
-      log("Found " .. table_size(entities) .. " portal-labels")
-      local orphaned_numbers_count = 0
-      for _, entity in pairs(entities) do
-        local pos = entity.position
-        local portal = surface.find_entities_filtered{position={pos.x+0.5, pos.y+1}, type = "simple-entity-with-owner", limit = 1}[1]
-        if not portal then
-          entity.destroy()
-          orphaned_numbers_count = orphaned_numbers_count + 1
-        end
-      end
-      log("Deleted " .. tostring(orphaned_numbers_count) .. " orphaned labels on " .. surface.name)
-    end
-  end
+  
+  -- no migrations needed, yay
+  
 end)
 
 remote.add_interface("portals",

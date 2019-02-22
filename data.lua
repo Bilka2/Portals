@@ -41,7 +41,6 @@ data:extend(
     subgroup = "transport",
     icon = "__Portals__/graphics/portal-gun.png",
     icon_size = 32,
-    flags = { "goes-to-quickbar" },
     order = "a",
     place_result="portal",
     stack_size= 1,
@@ -51,7 +50,6 @@ data:extend(
     name = "lemon-grenade",
     icon = "__Portals__/graphics/lemon-grenade.png",
     icon_size = 32,
-    flags = {"goes-to-quickbar"},
     capsule_action =
     {
       type = "throw",
@@ -102,8 +100,8 @@ data:extend(
         count = 200,
         ingredients =
     {
-      {"science-pack-1", 1},
-      {"science-pack-2", 1},
+      {"automation-science-pack", 1},
+      {"logistic-science-pack", 1},
     },
       time = 30
       },
@@ -121,14 +119,14 @@ data:extend(
           recipe = "lemon-grenade"
         },
       },
-      prerequisites = {"military-3",},
+      prerequisites = {"military-3", "flamethrower", "sulfur-processing"},
       unit = {
         count = 200,
         ingredients =
     {
-      {"science-pack-1", 1},
-      {"science-pack-2", 1},
-      {"science-pack-3", 1},
+      {"automation-science-pack", 1},
+      {"logistic-science-pack", 1},
+      {"chemical-science-pack", 1},
       {"military-science-pack", 1},
     },
     time = 30

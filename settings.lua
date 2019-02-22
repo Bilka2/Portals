@@ -7,7 +7,7 @@ data:extend({
   },
   {
     type = "bool-setting",
-    name = "portals-number-portal-pair-one",
+    name = "portals-dont-number-portal-pair-one",
     setting_type = "runtime-global",
     default_value = false
   }
