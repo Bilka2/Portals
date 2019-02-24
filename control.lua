@@ -179,7 +179,17 @@ script.on_configuration_changed(function(event)
     end
   end
   
-  -- no migrations needed, yay
+  -- migrate old flying text numbers to script rendering
+  for player_index, portals in pairs(global.portals) do
+    if index ~= 1 or not settings.global["portals-dont-number-portal-pair-one"].value then
+      if portals.a then
+        rendering.draw_text({ text=player_index, target=portals.a, target_offset={-0.5, -1}, surface=portals.a.surface, color={r = 1, g = 0.55, b = 0.1} })
+      end
+      if portals.b then
+        rendering.draw_text({ text=player_index, target=portals.b, target_offset={-0.5, -1}, surface=portals.b.surface, color={r = 0.5, g = 0.5, b = 1} })
+      end
+    end
+  end
   
 end)
 
