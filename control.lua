@@ -61,7 +61,10 @@ local function build_portal(player, surface, pos, portal_type, by_player)
   if by_player then
     script.raise_event(on_player_placed_portal_event, {player_index = index, portal = portal})
   end
-  portal.operable = false
+  if not portal.valid then -- another mod destroyed the new portal
+    return -- we don't destroy the old one
+  end
+  
   portal.destructible = false
   destroy_other_portal(index, portal_type)
   save_portal(index, portal_type, portal)
@@ -132,19 +135,19 @@ local function try_teleport(player, exit_portal, entrance_portal)
   local tick = game.tick
   if exit_portal then
     if (not global.teleport_delay[player.index]) or global.teleport_delay[player.index] < tick then
-      script.raise_event(on_player_teleported_event, {player_index = player.index, entrance_portal = entrance_portal, target_portal = exit_portal})
       player.surface.play_sound({path="portal-enter", position=player.position})
       player.teleport({exit_portal.position.x, exit_portal.position.y-0.9}, exit_portal.surface) --teleport player to the top of the exit_portal entity
       exit_portal.surface.play_sound({path="portal-exit", position=exit_portal.position})
       global.teleport_delay[player.index] = tick + 47
+      script.raise_event(on_player_teleported_event, {player_index = player.index, entrance_portal = entrance_portal, target_portal = exit_portal})
     end
   end
 end
 
 --tries to teleport when player connected, has character, not in vehicle:
-script.on_event(defines.events.on_player_changed_position, function(event)
+script.on_event(defines.events.on_tick, function(event)
   for index, player in pairs(game.connected_players) do
-    if player.character and not player.vehicle then --checks if player has a character (not god mode) and isn't in an vehicle
+    if player.character and not player.vehicle then
       local portal = on_portal(player)
       if portal then
         try_teleport(player, get_opposite_portal(portal), portal)
