@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4.4
+Date: 12. 05. 2019
+  Minor Features:
+    - Added errors when building fails.
+  Bugfixes:
+    - Fixed that placing portals cross-surface did not work.
+---------------------------------------------------------------------------------------------------
 Version: 0.4.3
 Date: 28. 04. 2019
   Bugfixes:

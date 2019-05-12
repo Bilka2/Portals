@@ -48,9 +48,7 @@ end
 local function destroy_other_portal(player_index, portal_type)
   local portal = get_players_portal(player_index, portal_type)
   if portal then
-    if portal.valid then
-      portal.destroy()
-    end
+    portal.destroy()
     global.portals[player_index][portal_type] = nil --remove the portal from the list
   end
 end
@@ -80,32 +78,49 @@ end
 script.on_event(defines.events.on_built_entity, function(event)
   if event.created_entity.type == "entity-ghost" and event.created_entity.ghost_name == "portal" then --is portal ghost-placed?
     local new_position = event.created_entity.position
-    local player = game.players[event.player_index]
+    local new_surface = event.created_entity.surface
+    local player = game.get_player(event.player_index)
+    event.created_entity.destroy() --destroy portal which is just a placeholder entitiy
+    
+    if not event.stack.valid_for_read and player.cursor_ghost and player.cursor_ghost.name == "portal-gun" then -- player used ghost cursor
+      build_error({"cant-use-ghost-cursor-for-portal"}, player, new_position)
+      return
+    end
+    
     if global.disable_long_distance_placing or settings.global["portals-disable-long-distance-placing"].value then
       local max_dist = player.build_distance
       local X = new_position.x
       local Y = new_position.y
       local pY=player.position.y
       local pX=player.position.x
-      event.created_entity.destroy() --destroy portal which is just a placeholder entitiy
-      if X>=pX-max_dist and X<=pX+max_dist and Y>=pY-max_dist and Y<=pY+max_dist then
-        player.surface.play_sound{path = "portalgun-shoot-b", position = new_position}
-        build_portal(player, player.surface, new_position, "b", true)
+      if X>=pX-max_dist and X<=pX+max_dist and Y>=pY-max_dist and Y<=pY+max_dist and player.surface == new_surface then
+        new_surface.play_sound{path = "portalgun-shoot-b", position = new_position}
+        build_portal(player, new_surface, new_position, "b", true)
+      else
+        build_error({"cant-reach"}, player, new_position)
       end
     else
-      event.created_entity.destroy()
-      player.surface.play_sound{path = "portalgun-shoot-b", position = new_position}
-      build_portal(player, player.surface, new_position, "b", true)
+      new_surface.play_sound{path = "portalgun-shoot-b", position = new_position}
+      build_portal(player, new_surface, new_position, "b", true)
     end
+    
   elseif event.created_entity.name == "portal" then --is portal normally placed?
     local new_position = event.created_entity.position
-    local player = game.players[event.player_index]
+    local new_surface = event.created_entity.surface
+    local player = game.get_player(event.player_index)
+    
     event.created_entity.destroy() --destroy portal which is just a placeholder entity
     player.cursor_stack.set_stack{name="portal-gun", count = 1} --make player hold one portal gun, does not care if player already holds portal guns
-    player.surface.play_sound{path = "portalgun-shoot-a", position = new_position}
-    build_portal(player, player.surface, new_position, "a", true)
+    new_surface.play_sound{path = "portalgun-shoot-a", position = new_position}
+    build_portal(player, new_surface, new_position, "a", true)
   end
 end)
+
+-- make a build error in the same way as the base game
+local function build_error(err, player, position)
+  player.play_sound{path = "utility/cannot_build"}
+  player.create_local_flying_text{text = err, position = position}
+end
 
 --destroy portal if the base entity is given
 local function destroy_portal_from_base(entity)
@@ -117,8 +132,10 @@ local function destroy_portal_from_base(entity)
 end
 
 --when base is mined/dies, destroy portal:
-script.on_event({defines.events.on_pre_player_mined_item, defines.events.on_entity_died}, function (event)
-  destroy_portal_from_base(event.entity)
+script.on_event({defines.events.on_pre_player_mined_item, defines.events.on_entity_died, defines.events.script_raised_destroy}, function(event)
+  if event.entity and event.entity.valid then 
+    destroy_portal_from_base(event.entity)
+  end
 end)
 
 
@@ -145,7 +162,7 @@ local function try_teleport(player, exit_portal, entrance_portal)
 end
 
 --tries to teleport when player connected, has character, not in vehicle:
-script.on_event(defines.events.on_tick, function(event)
+script.on_nth_tick(2, function()
   for index, player in pairs(game.connected_players) do
     if player.character and not player.vehicle then
       local portal = on_portal(player)

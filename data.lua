@@ -1,10 +1,10 @@
-require("prototypes.entities.portals")
-require("prototypes.entities.grenade")
+require("prototypes.portals")
+require("prototypes.grenade")
 require("prototypes.sounds")
 
 data:extend(
 {
---recipe
+-- recipes
   {
     type = "recipe",
     name = "portal-gun",
@@ -34,7 +34,7 @@ data:extend(
   },
 
   
---item
+-- items
   {
     type = "item",
     name = "portal-gun",
@@ -62,18 +62,18 @@ data:extend(
         range = 20,
         ammo_type =
         {
-        category = "grenade",
-        target_type = "position",
-        action =
-        {
-          type = "direct",
-          action_delivery =
+          category = "grenade",
+          target_type = "position",
+          action =
           {
-          type = "projectile",
-          projectile = "lemon-fire-big",
-          starting_speed = 0.5
+            type = "direct",
+            action_delivery =
+            {
+              type = "projectile",
+              projectile = "lemon-fire-big",
+              starting_speed = 0.5
+            }
           }
-        }
         }
       }
     },
@@ -82,56 +82,57 @@ data:extend(
     stack_size = 100
   },
 
---technology
+--technologies
   {
-      type = "technology",
-      name = "portals",
-      icon = "__Portals__/graphics/portal-tech.png",
-      icon_size = 64,
-      effects =
+    type = "technology",
+    name = "portals",
+    icon = "__Portals__/graphics/portal-tech.png",
+    icon_size = 64,
+    effects =
+    {
       {
-    {
-          type = "unlock-recipe",
-          recipe = "portal-gun"
-        },
+        type = "unlock-recipe",
+        recipe = "portal-gun"
       },
-      prerequisites = {"solar-panel-equipment",},
-      unit = {
-        count = 200,
-        ingredients =
-    {
-      {"automation-science-pack", 1},
-      {"logistic-science-pack", 1},
     },
+    prerequisites = {"solar-panel-equipment",},
+    unit =
+    {
+      count = 200,
+      ingredients =
+      {
+        {"automation-science-pack", 1},
+        {"logistic-science-pack", 1},
+      },
       time = 30
-      },
-      order = "k-a",
     },
+    order = "k-a",
+  },
   {
-      type = "technology",
-      name = "lemon-grenade",
-      icon = "__Portals__/graphics/lemon-grenade-tech.png",
-      icon_size = 128,
-      effects =
+    type = "technology",
+    name = "lemon-grenade",
+    icon = "__Portals__/graphics/lemon-grenade-tech.png",
+    icon_size = 128,
+    effects =
+    {
       {
-    {
-          type = "unlock-recipe",
-          recipe = "lemon-grenade"
-        },
+        type = "unlock-recipe",
+        recipe = "lemon-grenade"
       },
-      prerequisites = {"military-3", "flamethrower", "sulfur-processing"},
-      unit = {
-        count = 200,
-        ingredients =
+    },
+    prerequisites = {"military-3", "flamethrower", "sulfur-processing"},
+    unit =
     {
-      {"automation-science-pack", 1},
-      {"logistic-science-pack", 1},
-      {"chemical-science-pack", 1},
-      {"military-science-pack", 1},
-    },
-    time = 30
+      count = 200,
+      ingredients =
+      {
+        {"automation-science-pack", 1},
+        {"logistic-science-pack", 1},
+        {"chemical-science-pack", 1},
+        {"military-science-pack", 1},
       },
-      order = "k-a",
+      time = 30
     },
-  
+    order = "k-a",
+  }
 })
