@@ -5,6 +5,13 @@ local on_player_placed_portal_event = script.generate_event_name()
 
 
 -- UTILITIES --
+
+-- make a build error in the same way as the base game
+local function build_error(err, player, position)
+  player.play_sound{path = "utility/cannot_build"}
+  player.create_local_flying_text{text = err, position = position}
+end
+
 --get the portal this one is connected to
 local function get_opposite_portal(entity)
   for _, v in pairs(global.portals) do
@@ -115,12 +122,6 @@ script.on_event(defines.events.on_built_entity, function(event)
     build_portal(player, new_surface, new_position, "a", true)
   end
 end)
-
--- make a build error in the same way as the base game
-local function build_error(err, player, position)
-  player.play_sound{path = "utility/cannot_build"}
-  player.create_local_flying_text{text = err, position = position}
-end
 
 --destroy portal if the base entity is given
 local function destroy_portal_from_base(entity)
