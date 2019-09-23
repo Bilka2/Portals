@@ -154,6 +154,27 @@ script.on_event({defines.events.on_pre_player_mined_item, defines.events.on_enti
   end
 end)
 
+-- when base is cloned, remove original and make clone work
+script.on_event(defines.events.on_entity_cloned, function(event)  
+  local index = get_portals_owner(event.source)
+  if not index then -- invalid portal was cloned
+    event.source.destroy()
+    event.destination.destroy()
+    return
+  end
+ 
+  local portal = event.destination
+  local portal_type = get_portals_type(event.source)
+  portal.destructible = false
+  destroy_other_portal(index, portal_type)
+  save_portal(index, portal_type, portal)
+  if index ~= 1 or not settings.global["portals-dont-number-portal-pair-one"].value then
+    local portal_colour = {}
+    if portal_type == "a" then portal_colour = {r = 1, g = 0.55, b = 0.1} end --orange portals get orange number
+    if portal_type == "b" then portal_colour = {r = 0.5, g = 0.5, b = 1} end --blue portals get blue number
+    rendering.draw_text({ text=index, target=portal, target_offset={-0.5, -1}, surface=event.destination.surface, color=portal_colour }) --creates portal text
+  end
+end)
 
 -- Events that run every tick/often: TELEPORTING THE PLAYER --
 local function on_portal(player)
