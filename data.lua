@@ -1,6 +1,255 @@
-require("prototypes.portals")
-require("prototypes.grenade")
-require("prototypes.sounds")
+-- portal entities
+data:extend(
+{
+  {
+    type = "simple-entity-with-owner",
+    name = "portal", --this is what gets placed by the item
+    flags = {"player-creation", "not-deconstructable", "not-rotatable"},
+    selectable_in_game = false,
+    minable = {mining_time = 5, result = nil},
+    picture =
+    {
+      filename = "__Portals__/graphics/entity_portal.png",
+      priority = "high",
+      width = 76,
+      height = 128,
+      scale = 0.5,
+    },
+    collision_box = {{0, -0.6}, {0, 0.6}},
+    collision_mask = { "item-layer", "object-layer", "water-tile"},
+    selection_box = {{-0.5, -0.9}, {0.5, 0.9}},
+    tile_width = 1,
+    tile_height = 2,
+  },
+  
+  {
+    type = "simple-entity-with-owner",
+    name = "portal-a",
+    flags = {"player-creation", "not-blueprintable", "not-deconstructable", "not-rotatable"},
+    map_color = {r=1, g=0.5, b=0},
+    placeable_by = {item="portal-gun", count= 1},
+    minable = {mining_time = 0.7, result = nil},
+    max_health = 20,
+    collision_box = {{0, -0.6}, {0, 0.6}},
+    collision_mask = { "item-layer", "object-layer", "water-tile"},
+    selection_box = {{-0.5, -0.9}, {0.5, 0.9}},
+    random_animation_offset = false,
+    animations =
+    {
+    {
+      filename = "__Portals__/graphics/entity_portal-a.png",
+      priority = "high",
+      width = 76,
+      height = 128,
+      frame_count = 32,
+      line_length = 8,
+      animation_speed = 0.5,
+      scale = 0.5,
+    }
+    },
+    working_sound =
+    {
+      sound = { filename = "__Portals__/sounds/portal_ambient_loop1.ogg" },
+      volume = 0.1,
+      audible_distance_modifier = 0.4,
+      probability = 1
+    },
+    render_layer = "floor",
+    tile_width = 1,
+    tile_height = 2,
+  },
+  
+  {
+    type = "simple-entity-with-owner",
+    name = "portal-b",
+    flags = {"player-creation", "not-blueprintable", "not-deconstructable", "not-rotatable"},
+    map_color = {r=0.5, g=0.5, b=1},
+    placeable_by = {item="portal-gun", count= 1},
+    minable = {mining_time = 0.7, result = nil},
+    max_health = 20,
+    collision_box = {{0, -0.6}, {0, 0.6}},
+    collision_mask = { "item-layer", "object-layer", "water-tile"},
+    selection_box = {{-0.5, -0.9}, {0.5, 0.9}},
+    random_animation_offset = false,
+    animations =
+    {
+    {
+      filename = "__Portals__/graphics/entity_portal-b.png",
+      priority = "high",
+      width = 76,
+      height = 128,
+      frame_count = 32,
+      line_length = 8,
+      animation_speed = 0.5,
+      scale = 0.5,
+    }
+    },
+    working_sound =
+    {
+      sound = { filename = "__Portals__/sounds/portal_ambient_loop1.ogg" },
+      volume = 0.1,
+      audible_distance_modifier = 0.4,
+      probability = 1
+    },
+    render_layer = "floor",
+    tile_width = 1,
+    tile_height = 2,
+  }
+})
+
+--projectiles for lemon grenade
+data:extend(
+{
+  {
+    type = "projectile",
+    name = "lemon-fire-big",
+    flags = {"not-on-map"},
+    acceleration = 0.005,
+    action =
+    {
+      {
+        type = "direct",
+        action_delivery =
+        {
+        type = "instant",
+        target_effects =
+        {
+          {
+          type = "create-entity",
+          entity_name = "explosion"
+          },
+          {
+          type = "create-entity",
+          entity_name = "small-scorchmark",
+          check_buildability = true
+          }
+        }
+        }
+      },
+      {
+        type = "cluster",
+        cluster_count = 7,
+        distance = 4,
+        distance_deviation = 3,
+        action_delivery =
+        {
+          type = "projectile",
+          projectile = "lemon-fire",
+          direction_deviation = 0.6,
+          starting_speed = 0.2,
+          starting_speed_deviation = 0.1
+        }
+      }
+    },
+    light = {intensity = 0.5, size = 4},
+    animation =
+    {
+      filename = "__Portals__/graphics/lemon-grenade-small.png",
+      frame_count = 1,
+      width = 24,
+      height = 24,
+      priority = "high"
+    },
+    shadow =
+    {
+      filename = "__base__/graphics/entity/grenade/grenade-shadow.png",
+      frame_count = 1,
+      width = 24,
+      height = 24,
+      priority = "high"
+    }
+  },
+  {
+    type = "projectile",
+    name = "lemon-fire",
+    flags = {"not-on-map"},
+    acceleration = 0.005,
+    action =
+    {
+      {
+        type = "direct",
+        action_delivery =
+        {
+          type = "instant",
+          target_effects =
+          {
+            {
+              type = "create-fire",
+              entity_name = "fire-flame",
+              initial_ground_flame_count = 30,
+            },
+          }
+        }
+      },
+      {
+        type = "area",
+        radius = 3,
+        action_delivery =
+        {
+          type = "instant",
+          target_effects =
+          {
+          {
+            type = "create-sticker",
+            sticker = "fire-sticker"
+          },
+          {
+            type = "damage",
+            damage = { amount = 20, type = "fire" }
+          }
+          }
+        }
+      },
+    },
+    light = {intensity = 0.5, size = 4},
+    animation =
+    {
+      filename = "__Portals__/graphics/lemon-grenade-small.png",
+      frame_count = 1,
+      width = 24,
+      height = 24,
+      priority = "high"
+    },
+    shadow =
+    {
+      filename = "__base__/graphics/entity/grenade/grenade-shadow.png",
+      frame_count = 1,
+      width = 24,
+      height = 24,
+      priority = "high"
+    }
+  },
+})
+
+--sounds for teleporting
+data:extend(
+{
+  {
+    type = "sound",
+    name = "portal-enter",
+    filename = "__Portals__/sounds/portal_enter.ogg",
+    volume = 0.42
+  },
+  {
+    type = "sound",
+    name = "portal-exit",
+    filename = "__Portals__/sounds/portal_exit.ogg",
+    volume = 0.42
+  },
+  {
+    type = "sound",
+    name = "portalgun-shoot-a",
+    filename = "__Portals__/sounds/portalgun_shoot_red1.ogg",
+    volume = 0.5
+  },
+  {
+    type = "sound",
+    name = "portalgun-shoot-b",
+    filename = "__Portals__/sounds/portalgun_shoot_blue1.ogg",
+    volume = 0.5
+  }
+})
+
 
 data:extend(
 {
