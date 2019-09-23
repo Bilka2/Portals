@@ -12,6 +12,17 @@ local function build_error(err, player, position)
   player.create_local_flying_text{text = err, position = position}
 end
 
+-- returns whether this portal is one of mine
+local portal_names = 
+{
+  ["portal"] = true,
+  ["portal-a"] = true,
+  ["portal-b"] = true,
+}
+local function is_portal(entity)
+  return portal_names[entity.name]
+end
+
 --get the portal this one is connected to
 local function get_opposite_portal(entity)
   for _, v in pairs(global.portals) do
@@ -28,6 +39,14 @@ local function get_players_portal(player_index, portal_type) -- example: 1, "a" 
   return global.portals[player_index] and global.portals[player_index][portal_type] or nil
 end
 
+-- destroy the portal and remove it from the global table
+local function destroy_portal(player_index, portal_type, portal)
+  portal.destroy()
+  if global.portals[player_index] and global.portals[player_index][portal_type] then
+    global.portals[player_index][portal_type] = nil -- remove the portal from the list
+  end
+end
+
 --gets which type the portal is (portal-a is a, portal-b is b)
 local function get_portals_type(entity)
   return entity.name:find("-b") and "b" or "a"
@@ -35,8 +54,8 @@ end
 
 --gets the player_index of the owner of the portal
 local function get_portals_owner(entity)
-  for player_index, table in pairs(global.portals) do
-    if (table.a and table.a == entity) or (table.b and table.b == entity) then
+  for player_index, tbl in pairs(global.portals) do
+    if (tbl.a and tbl.a == entity) or (tbl.b and tbl.b == entity) then
       return player_index
     end
   end
@@ -55,8 +74,7 @@ end
 local function destroy_other_portal(player_index, portal_type)
   local portal = get_players_portal(player_index, portal_type)
   if portal then
-    portal.destroy()
-    global.portals[player_index][portal_type] = nil --remove the portal from the list
+    destroy_portal(player_index, portal_type, portal)
   end
 end
 
@@ -125,11 +143,8 @@ end)
 
 --destroy portal if the base entity is given
 local function destroy_portal_from_base(entity)
-  if not entity.name:find("portal") then return end
-  global.portals[get_portals_owner(entity)][get_portals_type(entity)] = nil --remove the portal from the list
-  if entity.valid then
-    entity.destroy()
-  end
+  if not is_portal(entity) then return end
+  destroy_portal(get_portals_owner(entity), get_portals_type(entity), entity)
 end
 
 --when base is mined/dies, destroy portal:
@@ -144,7 +159,7 @@ end)
 local function on_portal(player)
   local player_pos = player.position
   local entity = player.surface.find_entities_filtered{area={{player_pos.x-0.7,player_pos.y-0.3}, {player_pos.x+0.7,player_pos.y+0.1}}, type = "simple-entity-with-owner", force = player.force, limit = 1}[1]
-  if entity and entity.name:find("portal") then
+  if entity and is_portal(entity) then
     return entity
   end
 end
