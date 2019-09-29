@@ -155,7 +155,8 @@ script.on_event({defines.events.on_pre_player_mined_item, defines.events.on_enti
 end)
 
 -- when base is cloned, remove original and make clone work
-script.on_event(defines.events.on_entity_cloned, function(event)  
+script.on_event(defines.events.on_entity_cloned, function(event)
+  if not is_portal(event.source) then return end
   local index = get_portals_owner(event.source)
   if not index then -- invalid portal was cloned
     event.source.destroy()
