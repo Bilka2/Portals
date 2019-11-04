@@ -1,10 +1,10 @@
 {
   "name": "Portals",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "factorio_version" : "0.17",
   "title": "Portals",
   "author": "Bilka",
   "homepage": "https://forums.factorio.com/viewtopic.php?f=93&t=44305",
   "description": "Adds combustible lemons, a portal gun and portals. Each player has their own set of portals that can be used by all players.",
-  "dependencies": ["base"]
+  "dependencies": ["base >= 0.17.75"]
 }

@@ -20,7 +20,7 @@ local portal_names =
   ["portal-b"] = true,
 }
 local function is_portal(entity)
-  return portal_names[entity.name]
+  return portal_names[entity.name] or false
 end
 
 --get the portal this one is connected to
@@ -101,7 +101,7 @@ end
 
 --Creates portal-b when portal is ghost-placed, creates portal-a when portal is normally placed:
 script.on_event(defines.events.on_built_entity, function(event)
-  if event.created_entity.type == "entity-ghost" and event.created_entity.ghost_name == "portal" then --is portal ghost-placed?
+  if event.created_entity.type == "entity-ghost" then --is portal ghost-placed?
     local new_position = event.created_entity.position
     local new_surface = event.created_entity.surface
     local player = game.get_player(event.player_index)
@@ -129,7 +129,7 @@ script.on_event(defines.events.on_built_entity, function(event)
       build_portal(player, new_surface, new_position, "b", true)
     end
     
-  elseif event.created_entity.name == "portal" then --is portal normally placed?
+  else --is portal normally placed?
     local new_position = event.created_entity.position
     local new_surface = event.created_entity.surface
     local player = game.get_player(event.player_index)
@@ -139,7 +139,7 @@ script.on_event(defines.events.on_built_entity, function(event)
     new_surface.play_sound{path = "portalgun-shoot-a", position = new_position}
     build_portal(player, new_surface, new_position, "a", true)
   end
-end)
+end, {{filter = "name", name = "portal"}, {filter = "ghost_name", name = "portal"}}) -- event filters for on_built_entity
 
 --destroy portal if the base entity is given
 local function destroy_portal_from_base(entity)
@@ -152,7 +152,7 @@ script.on_event({defines.events.on_pre_player_mined_item, defines.events.on_enti
   if event.entity and event.entity.valid then 
     destroy_portal_from_base(event.entity)
   end
-end)
+end) -- no filters because script_raised_destroy can't be filtered AND filters can only be used when registering single events
 
 -- when base is cloned, remove original and make clone work
 script.on_event(defines.events.on_entity_cloned, function(event)
@@ -175,7 +175,7 @@ script.on_event(defines.events.on_entity_cloned, function(event)
     if portal_type == "b" then portal_colour = {r = 0.5, g = 0.5, b = 1} end --blue portals get blue number
     rendering.draw_text({ text=index, target=portal, target_offset={-0.5, -1}, surface=event.destination.surface, color=portal_colour }) --creates portal text
   end
-end)
+end) -- no filters because entity_cloned can't be filtered (yet)
 
 -- Events that run every tick/often: TELEPORTING THE PLAYER --
 local function on_portal(player)
