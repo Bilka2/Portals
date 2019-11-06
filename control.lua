@@ -101,11 +101,11 @@ end
 
 --Creates portal-b when portal is ghost-placed, creates portal-a when portal is normally placed:
 script.on_event(defines.events.on_built_entity, function(event)
-  if event.created_entity.type == "entity-ghost" then --is portal ghost-placed?
+  if event.created_entity.type == "entity-ghost" and event.created_entity.ghost_name == "portal" then --is portal ghost-placed?
     local new_position = event.created_entity.position
     local new_surface = event.created_entity.surface
     local player = game.get_player(event.player_index)
-    event.created_entity.destroy() --destroy portal which is just a placeholder entitiy
+    event.created_entity.destroy() --destroy portal which is just a placeholder entity
     
     if not event.stack.valid_for_read and player.cursor_ghost and player.cursor_ghost.name == "portal-gun" then -- player used ghost cursor
       build_error({"cant-use-ghost-cursor-for-portal"}, player, new_position)
@@ -129,7 +129,7 @@ script.on_event(defines.events.on_built_entity, function(event)
       build_portal(player, new_surface, new_position, "b", true)
     end
     
-  else --is portal normally placed?
+  elseif event.created_entity.name == "portal" then --is portal normally placed?
     local new_position = event.created_entity.position
     local new_surface = event.created_entity.surface
     local player = game.get_player(event.player_index)
@@ -139,7 +139,18 @@ script.on_event(defines.events.on_built_entity, function(event)
     new_surface.play_sound{path = "portalgun-shoot-a", position = new_position}
     build_portal(player, new_surface, new_position, "a", true)
   end
-end, {{filter = "name", name = "portal"}, {filter = "ghost_name", name = "portal"}}) -- event filters for on_built_entity
+end, {{filter = "name", name = "portal"}, {filter = "ghost_name", name = "portal"}}) -- event filters for on_built_entity. Have to keep the name ifs for mods that custom raise on_built_entity (idk why you'd do that, we have a script event....)
+
+-- we don't get a player through this event, so we can never create a proper portal from it. So instead, the portal is just destroyed.
+-- @other mod authors: If you want to create a working portal in your mod, use the remote interface that is detailed lower in this file.
+script.on_event(defines.events.script_raised_built, function (event)
+  if not event.entity then return end -- bad mods may raise the event incorrectly
+  if event.entity.type == "entity-ghost" and event.entity.ghost_name == "portal" then
+    event.entity.destroy()    
+  elseif event.entity.name == "portal" or event.entity.name == "portal-a" or event.entity.name == "portal-b" then  
+    event.entity.destroy()
+  end
+end)
 
 --destroy portal if the base entity is given
 local function destroy_portal_from_base(entity)
