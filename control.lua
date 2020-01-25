@@ -84,7 +84,7 @@ local function build_portal(player, surface, pos, portal_type, by_player)
   if by_player then
     script.raise_event(on_player_placed_portal_event, {player_index = index, portal = portal})
   end
-  if not portal.valid then -- another mod destroyed the new portal
+  if (not portal) or (not portal.valid) then -- another mod destroyed the new portal
     return -- we don't destroy the old one
   end
   
@@ -135,7 +135,9 @@ script.on_event(defines.events.on_built_entity, function(event)
     local player = game.get_player(event.player_index)
     
     event.created_entity.destroy() --destroy portal which is just a placeholder entity
-    player.cursor_stack.set_stack{name="portal-gun", count = 1} --make player hold one portal gun, does not care if player already holds portal guns
+    if player.cursor_stack then 
+      player.cursor_stack.set_stack{name="portal-gun", count = 1} --make player hold one portal gun, does not care if player already holds portal guns
+    end
     new_surface.play_sound{path = "portalgun-shoot-a", position = new_position}
     build_portal(player, new_surface, new_position, "a", true)
   end
