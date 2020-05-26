@@ -12,15 +12,20 @@ local function build_error(err, player, position)
   player.create_local_flying_text{text = err, position = position}
 end
 
--- returns whether this portal is one of mine
-local portal_names = 
-{
-  ["portal"] = true,
-  ["portal-a"] = true,
-  ["portal-b"] = true,
-}
-local function is_portal(entity)
-  return portal_names[entity.name] or false
+-- the event filters for the portals placed directly by the item
+local function base_portal_event_filters()
+  return {
+    {filter = "name", name = "portal"},
+    {filter = "ghost_name", name = "portal"}
+  }
+end
+
+-- the event filters for any and all variants of the portals
+local function full_portal_event_filters()
+  local t = base_portal_event_filters()
+  t[#t+1] = {filter = "name", name = "portal-a"}
+  t[#t+1] = {filter = "name", name = "portal-b"}
+  return t
 end
 
 --get the portal this one is connected to
@@ -48,8 +53,14 @@ local function destroy_portal(player_index, portal_type, portal)
 end
 
 --gets which type the portal is (portal-a is a, portal-b is b)
-local function get_portals_type(entity)
-  return entity.name:find("-b") and "b" or "a"
+local function get_portals_type(portal)
+  return portal.name:find("-b") and "b" or "a"
+end
+
+--gets the color the portal text should have, based on the portal_type ("a" or "b")
+local function get_portals_color(portal_type)
+  return (portal_type == "a") and {r = 1, g = 0.55, b = 0.1} or {r = 0.5, g = 0.5, b = 1}
+  --                              ^ orange                      ^ blue
 end
 
 --gets the player_index of the owner of the portal
@@ -92,16 +103,14 @@ local function build_portal(player, surface, pos, portal_type, by_player)
   destroy_other_portal(index, portal_type)
   save_portal(index, portal_type, portal)
   if index ~= 1 or not settings.global["portals-dont-number-portal-pair-one"].value then
-    local portal_colour = {}
-    if portal_type == "a" then portal_colour = {r = 1, g = 0.55, b = 0.1} end --orange portals get orange number
-    if portal_type == "b" then portal_colour = {r = 0.5, g = 0.5, b = 1} end --blue portals get blue number
-    rendering.draw_text({ text=index, target=portal, target_offset={-0.5, -1}, surface=surface, color=portal_colour }) --creates portal text
+    rendering.draw_text({ text=index, target=portal, target_offset={-0.5, -1}, surface=surface, color=get_portals_color(portal_type) }) --creates portal text
   end
 end
 
---Creates portal-b when portal is ghost-placed, creates portal-a when portal is normally placed:
+--Creates portal-b when portal is ghost-placed, creates portal-a when portal is normally placed.
+-- Note: I dont react to on_built_entity with portal-a and portal-b because this can only happen in the entity editor map editor (there is no item to place them normally). For now, I don't think I need to handle the entity editor map editor.
 script.on_event(defines.events.on_built_entity, function(event)
-  if event.created_entity.type == "entity-ghost" and event.created_entity.ghost_name == "portal" then --is portal ghost-placed?
+  if event.created_entity.type == "entity-ghost" then --portal ghost-placed
     local new_position = event.created_entity.position
     local new_surface = event.created_entity.surface
     local player = game.get_player(event.player_index)
@@ -129,7 +138,7 @@ script.on_event(defines.events.on_built_entity, function(event)
       build_portal(player, new_surface, new_position, "b", true)
     end
     
-  elseif event.created_entity.name == "portal" then --is portal normally placed?
+  else --portal normally placed
     local new_position = event.created_entity.position
     local new_surface = event.created_entity.surface
     local player = game.get_player(event.player_index)
@@ -141,35 +150,29 @@ script.on_event(defines.events.on_built_entity, function(event)
     new_surface.play_sound{path = "portalgun-shoot-a", position = new_position}
     build_portal(player, new_surface, new_position, "a", true)
   end
-end, {{filter = "name", name = "portal"}, {filter = "ghost_name", name = "portal"}}) -- event filters for on_built_entity. Have to keep the name ifs for mods that custom raise on_built_entity (idk why you'd do that, we have a script event....)
+end, base_portal_event_filters())
 
 -- we don't get a player through this event, so we can never create a proper portal from it. So instead, the portal is just destroyed.
 -- @other mod authors: If you want to create a working portal in your mod, use the remote interface that is detailed lower in this file.
 script.on_event(defines.events.script_raised_built, function (event)
-  if not event.entity then return end -- bad mods may raise the event incorrectly
-  if event.entity.type == "entity-ghost" and event.entity.ghost_name == "portal" then
-    event.entity.destroy()    
-  elseif event.entity.name == "portal" or event.entity.name == "portal-a" or event.entity.name == "portal-b" then  
-    event.entity.destroy()
-  end
-end)
+  event.entity.destroy()
+end, full_portal_event_filters())
 
 --destroy portal if the base entity is given
 local function destroy_portal_from_base(entity)
-  if not is_portal(entity) then return end
   destroy_portal(get_portals_owner(entity), get_portals_type(entity), entity)
 end
 
 --when base is mined/dies, destroy portal:
 script.on_event({defines.events.on_pre_player_mined_item, defines.events.on_entity_died, defines.events.script_raised_destroy}, function(event)
-  if event.entity and event.entity.valid then 
-    destroy_portal_from_base(event.entity)
-  end
-end) -- no filters because script_raised_destroy can't be filtered AND filters can only be used when registering single events
+  destroy_portal_from_base(event.entity)
+end)
+script.set_event_filter(defines.events.on_pre_player_mined_item, full_portal_event_filters())
+script.set_event_filter(defines.events.on_entity_died, full_portal_event_filters())
+script.set_event_filter(defines.events.script_raised_destroy, full_portal_event_filters())
 
 -- when base is cloned, remove original and make clone work
 script.on_event(defines.events.on_entity_cloned, function(event)
-  if not is_portal(event.source) then return end
   local index = get_portals_owner(event.source)
   if not index then -- invalid portal was cloned
     event.source.destroy()
@@ -183,31 +186,26 @@ script.on_event(defines.events.on_entity_cloned, function(event)
   destroy_other_portal(index, portal_type)
   save_portal(index, portal_type, portal)
   if index ~= 1 or not settings.global["portals-dont-number-portal-pair-one"].value then
-    local portal_colour = {}
-    if portal_type == "a" then portal_colour = {r = 1, g = 0.55, b = 0.1} end --orange portals get orange number
-    if portal_type == "b" then portal_colour = {r = 0.5, g = 0.5, b = 1} end --blue portals get blue number
-    rendering.draw_text({ text=index, target=portal, target_offset={-0.5, -1}, surface=event.destination.surface, color=portal_colour }) --creates portal text
+    rendering.draw_text({ text=index, target=portal, target_offset={-0.5, -1}, surface=event.destination.surface, color = get_portals_color(portal_type) }) --creates portal text
   end
-end) -- no filters because entity_cloned can't be filtered (yet)
+end, full_portal_event_filters())
 
 -- Events that run every tick/often: TELEPORTING THE PLAYER --
 local function on_portal(player)
-  local player_pos = player.position
-  local entity = player.surface.find_entities_filtered{area={{player_pos.x-0.7,player_pos.y-0.3}, {player_pos.x+0.7,player_pos.y+0.1}}, type = "simple-entity-with-owner", force = player.force, limit = 1}[1]
-  if entity and is_portal(entity) then
-    return entity
-  end
+  local plyr_pos = player.position
+  return player.surface.find_entities_filtered{area={{plyr_pos.x-0.7,plyr_pos.y-0.3}, {plyr_pos.x+0.7,plyr_pos.y+0.1}}, name = {"portal-a", "portal-b"}, force = player.force, limit = 1}[1]
 end
     
 local function try_teleport(player, exit_portal, entrance_portal)  
   local tick = game.tick
+  local player_index = player.index
   if exit_portal then
-    if (not global.teleport_delay[player.index]) or global.teleport_delay[player.index] < tick then
+    if (not global.teleport_delay[player_index]) or global.teleport_delay[player_index] < tick then
       player.surface.play_sound({path="portal-enter", position=player.position})
       player.teleport({exit_portal.position.x, exit_portal.position.y-0.9}, exit_portal.surface) --teleport player to the top of the exit_portal entity
       exit_portal.surface.play_sound({path="portal-exit", position=exit_portal.position})
-      global.teleport_delay[player.index] = tick + 47
-      script.raise_event(on_player_teleported_event, {player_index = player.index, entrance_portal = entrance_portal, target_portal = exit_portal})
+      global.teleport_delay[player_index] = tick + 47
+      script.raise_event(on_player_teleported_event, {player_index = player_index, entrance_portal = entrance_portal, target_portal = exit_portal})
     end
   end
 end
@@ -283,20 +281,26 @@ remote.add_interface("portals",
   get_on_player_placed_portal_event = function() return on_player_placed_portal_event end,
     -- event.portal = LuaEntity, the portal that was placed
     -- event.player_index = Index of the player that placed the portal, which is the player the portal belongs to
+    
   get_on_player_teleported_event = function() return on_player_teleported_event end,
     -- event.player_index = Index of the player that is teleporting
     -- event.entrance_portal = LuaEntity, the portal the player is teleporting from
     -- event.target_portal = LuaEntity, the portal the player is teleporting to
+    
   build_portal_a = function(player, surface, position) build_portal(player, surface, position, "a", false) end, --orange portal
     -- position: Position of the new portal
     -- surface: LuaSurface, the surface of the new portal
     -- player: LuaPlayer that the portal belongs to. This player can't have more than one pair, build_portal will delete any excess portals
+    
   build_portal_b = function(player, surface, position) build_portal(player, surface, position, "b", false) end, --blue portal
     -- position: Position of the new portal
     -- surface: LuaSurface, the surface of the new portal
     -- player: LuaPlayer that the portal belongs to. This player can't have more than one pair, build_portal will delete any excess portals
+    
   destroy_portal = function(entity) destroy_portal_from_base(entity) end,
     -- entity: LuaEntity, the portal to destroy
+    -- note that this does not check if the selected entity is a portal, however you should only supply portals here.
+    
   disable_long_distance_placing = function(bool) global.disable_long_distance_placing = bool end
     -- whether the blue portal can be placed from a long distance. If this is true the player can never place from a long distance, if it is false, the player can place from a long distance depending on the mod option
   

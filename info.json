@@ -6,5 +6,5 @@
   "author": "Bilka",
   "homepage": "https://forums.factorio.com/viewtopic.php?f=93&t=44305",
   "description": "Adds combustible lemons, a portal gun and portals. Each player has their own set of portals that can be used by all players.",
-  "dependencies": ["base >= 0.18.0"]
+  "dependencies": ["base >= 0.18.27"]
 }
