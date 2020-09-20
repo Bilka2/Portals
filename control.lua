@@ -235,31 +235,10 @@ script.on_configuration_changed(function(event)
   if not event.mod_changes["Portals"] then return end
   local old_version = event.mod_changes["Portals"].old_version
   if not old_version then return end
-  global.teleport_delay = global.teleport_delay or {}
-  global.disable_long_distance_placing = global.disable_long_distance_placing or false
-  --no migration from < 0.3.3
-  if old_version:match("^0.1") or old_version:match("^0.2") then
-    error("Migrating from versions older than 0.3.3 of the mod is not supported. Use version 0.3.3 to migrate from those version and then use this version again.")
+  --no migration from < 0.4
+  if old_version:match("^0.1") or old_version:match("^0.2") or old_version:match("^0.3") then
+    error("Migrating from versions older than 0.4.2 of the mod is not supported. Use version 0.4.9 to migrate from those version and then use this version again.")
   end
-  local bad_versions = {"0.3.0", "0.3.1", "0.3.2"}
-  for _, v in pairs(bad_versions) do
-    if old_version == v then
-      error("Migrating from versions older than 0.3.3 of the mod is not supported. Use version 0.3.3 to migrate from those version and then use this version again.")
-    end
-  end
-  
-  -- migrate old flying text numbers to script rendering
-  for player_index, portals in pairs(global.portals) do
-    if index ~= 1 or not settings.global["portals-dont-number-portal-pair-one"].value then
-      if portals.a then
-        rendering.draw_text({ text=player_index, target=portals.a, target_offset={-0.5, -1}, surface=portals.a.surface, color={r = 1, g = 0.55, b = 0.1} })
-      end
-      if portals.b then
-        rendering.draw_text({ text=player_index, target=portals.b, target_offset={-0.5, -1}, surface=portals.b.surface, color={r = 0.5, g = 0.5, b = 1} })
-      end
-    end
-  end
-  
 end)
 
 remote.add_interface("portals",
