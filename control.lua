@@ -186,17 +186,30 @@ script.on_event(defines.events.on_entity_cloned, function(event)
   destroy_other_portal(index, portal_type)
   save_portal(index, portal_type, portal)
   if index ~= 1 or not settings.global["portals-dont-number-portal-pair-one"].value then
-    rendering.draw_text({ text=index, target=portal, target_offset={-0.5, -1}, surface=event.destination.surface, color = get_portals_color(portal_type) }) --creates portal text
+    rendering.draw_text({ text=tostring(index), target=portal, target_offset={-0.5, -1}, surface=event.destination.surface, color = get_portals_color(portal_type) }) --creates portal text
   end
 end, full_portal_event_filters())
 
 -- Events that run every tick/often: TELEPORTING THE PLAYER --
 local function on_portal(player)
   local plyr_pos = player.position
-  return player.surface.find_entities_filtered{area={{plyr_pos.x-0.7,plyr_pos.y-0.3}, {plyr_pos.x+0.7,plyr_pos.y+0.1}}, name = {"portal-a", "portal-b"}, force = player.force, limit = 1}[1]
+  local mov_speed_factor = math.max(0, math.min(3, player.character_running_speed / player.character.prototype.running_speed) - 1) / 2
+  local w = 0.7 + mov_speed_factor
+
+  return player.surface.find_entities_filtered(
+  {
+    area=
+    {
+      {plyr_pos.x - w, plyr_pos.y - (0.3 + mov_speed_factor/2)},
+      {plyr_pos.x + w, plyr_pos.y + (0.1 + mov_speed_factor/2)}
+    },
+    name = {"portal-a", "portal-b"},
+    force = player.force,
+    limit = 1
+  })[1]
 end
-    
-local function try_teleport(player, exit_portal, entrance_portal)  
+
+local function try_teleport(player, exit_portal, entrance_portal)
   local tick = game.tick
   local player_index = player.index
   if exit_portal then
@@ -212,7 +225,7 @@ end
 
 --tries to teleport when player connected, has character, not in vehicle:
 script.on_nth_tick(2, function()
-  for index, player in pairs(game.connected_players) do
+  for _, player in pairs(game.connected_players) do
     if player.character and not player.vehicle then
       local portal = on_portal(player)
       if portal then

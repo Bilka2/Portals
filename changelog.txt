@@ -1,92 +1,97 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.6.1
+Date: ????
+  Minor Features:
+    - Portals now "suck in" the player if the player has a high movement speed.
+---------------------------------------------------------------------------------------------------
 Version: 0.6.0
-Date: 20. 09. 2020
+Date: 2020-09-20
   Minor Features:
     - Updated to Factorio 1.0.
     - Removed the ability to migrate from mod versions <= 0.4.1.
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.1
-Date: 26. 05. 2020
+Date: 2020-05-26
   Minor Features:
     - Lemon grenades now destroy decoratives.
     - Code cleanup based on 0.18.27 event filtering changes.
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.0
-Date: 25. 01. 2020
+Date: 2020-01-25
   Minor Features:
     - Updated for 0.18.
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.9
-Date: 06. 11. 2019
+Date: 2019-11-06
   Bugfixes:
     - Fixed interaction with mods that custom raise on_built_entity.
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.8
-Date: 04. 11. 2019
+Date: 2019-11-04
   Minor Features:
     - Uses event filtering functionality.
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.7
-Date: 29. 09. 2019
+Date: 2019-09-29
   Bugfixes:
     - Fixed happy accident related to cloning.
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.6
-Date: 23. 09. 2019
+Date: 2019-09-23
   Bugfixes:
     - Fixed compatibility with warptorio2.
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.5
-Date: 20. 05. 2019
+Date: 2019-05-20
   Bugfixes:
     - Fixed issue related to the order of the functions in the file.
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.4
-Date: 12. 05. 2019
+Date: 2019-05-12
   Minor Features:
     - Added errors when building fails.
   Bugfixes:
     - Fixed that placing portals cross-surface did not work.
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.3
-Date: 28. 04. 2019
+Date: 2019-04-28
   Bugfixes:
     - Fixed that I did not handle my portals becoming invalid after raising events
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.2
-Date: 24. 02. 2019
+Date: 2019-04-24
   Bugfixes:
     - Fixed migration of numbering from 0.16
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.1
-Date: 22. 02. 2019
+Date: 2019-02-22
   Minor Features:
     - Added thumbnail
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.0
-Date: 22. 02. 2019
+Date: 2019-02-22
   Minor Features:
     - Updated for 0.17
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.3
-Date: 16. 08. 2018
+Date: 2018-08-16
   Minor Features:
     - Added setting to not number the portals of the first player - useful in singleplayer
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.2
-Date: 29. 12. 2017
+Date: 2017-12-29
   Bugfixes:
     - Fixed migration of broken portals
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.1
-Date: 29. 12. 2017
+Date: 2017-12-29
   Bugfixes:
     - Fixed that portals could be rotated, which lead to orphaned numbers (https://forums.factorio.com/viewtopic.php?p=328141#p328141)
     - Added a script to remove orphaned numbers from the world when it is loaded in this version, this is run automatically
     - Fixed migration
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.0
-Date: 18. 12. 2017
+Date: 2017-12-18
   Minor Features:
     - Update for 0.16
     - Made portals only one entity
@@ -94,7 +99,7 @@ Date: 18. 12. 2017
     - Removed the ability to migrate from mod versions <= 0.2.3
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.9
-Date: 21. 11. 2017
+Date: 2017-11-21
   Minor Features:
     - Renamed remote functions related to events
     - Events now pass player_index instead of player (for consistency with vanilla)
@@ -102,25 +107,25 @@ Date: 21. 11. 2017
     - Removed useless item
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.8
-Date: 21. 11. 2017
+Date: 2017-11-21
   Minor Features:
     - Added remote functions
     - Added custom events
     - Nicer entity code
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.7
-Date: 25. 10. 2017
+Date: 2017-10-25
   Minor Features:
     - Added setting to disable the ability to place blue portals from long distances.
     - Cleaned up entity code
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.6
-Date: 08. 06. 2017
+Date: 2017-06-08
   Bugfixes:
     - Fixed possible desync (Thank you Nexela!)
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.5
-Date: 05. 06. 2017
+Date: 2017-06-05
   Features:
     - Added sounds to the portal gun, the portals and teleportation
     - Added combustible lemons
