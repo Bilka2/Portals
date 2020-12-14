@@ -5,7 +5,7 @@ data:extend(
     type = "simple-entity-with-owner",
     name = "portal", --this is what gets placed by the item
     flags = {"player-creation", "not-deconstructable", "not-rotatable", "not-selectable-in-game"},
-    minable = {mining_time = 5, result = nil},
+    minable = {mining_time = 5},
     picture =
     {
       filename = "__Portals__/graphics/entity_portal.png",
@@ -24,10 +24,10 @@ data:extend(
   {
     type = "simple-entity-with-owner",
     name = "portal-a",
-    flags = {"player-creation", "not-blueprintable", "not-deconstructable"},
+    flags = {"not-rotatable", "player-creation", "not-blueprintable", "not-deconstructable"},
     map_color = {r=1, g=0.5, b=0},
     placeable_by = {item="portal-gun", count= 1},
-    minable = {mining_time = 0.7, result = nil},
+    minable = {mining_time = 0.7},
     max_health = 20,
     collision_box = {{0, -0.6}, {0, 0.6}},
     collision_mask = { "item-layer", "object-layer", "water-tile"},
@@ -57,10 +57,10 @@ data:extend(
   {
     type = "simple-entity-with-owner",
     name = "portal-b",
-    flags = {"player-creation", "not-blueprintable", "not-deconstructable"},
+    flags = {"not-rotatable", "player-creation", "not-blueprintable", "not-deconstructable"},
     map_color = {r=0.5, g=0.5, b=1},
     placeable_by = {item="portal-gun", count= 1},
-    minable = {mining_time = 0.7, result = nil},
+    minable = {mining_time = 0.7},
     max_health = 20,
     collision_box = {{0, -0.6}, {0, 0.6}},
     collision_mask = { "item-layer", "object-layer", "water-tile"},
@@ -293,7 +293,7 @@ data:extend(
     result = "lemon-grenade",
   },
 
-  
+
 -- items
   {
     type = "item",
