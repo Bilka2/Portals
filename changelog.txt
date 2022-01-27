@@ -1,7 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.7.1
 Date: ????
-  Changes:
+  Features:
+    - Changed license to MIT.
+      I cannot (reasonably) play games without controller support.
+      Maintaining mods for a game I can't play is an uninteresting hobby for me.
+      So I want to make it easier for others to fork my mods.
+      May you take this code and have fun with it.
 ---------------------------------------------------------------------------------------------------
 Version: 0.7.0
 Date: 2020-12-14
